@@ -71,6 +71,10 @@
 #define RELATIVE_PLACE_ARROW_Y 12.0/10
 #define ARROW_POS_X 250
 #define ARROW_POS_Y 175
+#define PHYSICAL_SCREEN_WIDTH 18 //mm
+#define PHYSICAL_SCREEN_HEIGHT 10.125 //mm
+#define PHYSICAL_PIXEL_SIZE 0.0140625//mm
+#define EYE_RELEIF 18 //mm
 
 //
 #define MAX_SPEED 200
@@ -149,7 +153,14 @@ public:
 
     /***Simulator***/
     void benchTest(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double& newLat ,double& newLon,VnVector3& sensorVel,int counter);
-
+    /**Line of sight func***/
+    bool vnRotate3D(double angDeg, VnVector3& vecIn, VnVector3& vecOut,char xyz);
+    void ypr2quat(double yaw,double pitch,double roll,std::vector<double>& quaternion);
+    double quat2AngleAxis(std::vector<double> quaternion , std::vector<double>& axis);
+    bool setCoordinateToScr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double yaw,double pitch,double roll,Point& scrP);
+    void rotate2XY(std::vector<double>& vec2XY, std::vector<double>& normal, Point& scrP);
+    void renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitudePrev,std::vector<double>& vecLongitudePrev,std::vector<double>& vecAltitudePrev,double yaw, double pitch, double roll, std::vector<Point>& scrPts);
+    bool isInScr(Point P);
 
 };
 

@@ -247,7 +247,6 @@ void* gui_main(void* arg)
 						globQuitSig = true;
 					}
 				}
-
                 /******MA Filter*****
                 //printf("MA filter - Start\n");
                 newLon = 0;
@@ -588,6 +587,7 @@ void* gui_main(void* arg)
                     vecLongitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
+                    /*
                     ///////////////////////////////////////////////// TODO: move to a decent location
                     SDL_RWops *latlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lat.log", "w");
                     SDL_RWops *lonlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lon.log", "w");
@@ -606,6 +606,7 @@ void* gui_main(void* arg)
                     SDL_RWclose(latlogfile);
                     SDL_RWclose(lonlogfile);
                     /////////////////////////////////////////////////
+                    */
                     //printf("test1\n");
                     //printf("test5\n");
                     for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
