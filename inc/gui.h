@@ -75,6 +75,7 @@
 #define PHYSICAL_SCREEN_HEIGHT 10.125 //mm
 #define PHYSICAL_PIXEL_SIZE 0.0140625//mm
 #define EYE_RELEIF 18 //mm
+#define ROAD_WIDTH 1
 
 //
 #define MAX_SPEED 200
@@ -163,7 +164,10 @@ public:
     bool isInScr(Point P);
     void getPitchYawFromVec(std::vector<double>& vec, double& pitch,double& yaw);
     bool coordinate2Scr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double pitch,double yaw,double roll,Point& scrP);
-
+    bool coordinate2RelSpace(double lat0,double lon0,double alt0,double latP,double lonP,double altP,std::vector<double>& delR);
+    bool onScrn(double pitch,double yaw);
+    bool relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,double roll,Point& scrP);
+    bool sideLines2Scrn(double pitch,double yaw,double roll,double lat0,double lon0,double alt0,double latP1,double lonP1,double altP1,double latP2,double lonP2,double altP2,Point& scrPLeft1, Point& scrPRight1,Point& scrPLeft2, Point& scrPRight2);
 
 };
 

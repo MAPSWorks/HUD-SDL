@@ -24,6 +24,10 @@ int RPM = 0;
 ///Eden's Block
 
 Point scrP(0,0);
+Point scrPLeft1(0,0);
+Point scrPRight1(0,0);
+Point scrPLeft2(0,0);
+Point scrPRight2(0,0);
 Point scrOrigin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
 
 VnVector3 sensorVel;
@@ -97,6 +101,7 @@ LTexture gGPSSignalTexture;
 LTexture gCarMapMarkTexture;
 LTexture gBlueToothTexture;
 LTexture gpsNOSIgnalTexture;
+LTexture gArtHorzNeedleTexture;
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -177,7 +182,7 @@ bool loadMedia()
 		gGearGradient[3].loadFromFile( PROJ_HOME "/resources/gearFinal4.png" ) 		&&
 		gGearGradient[4].loadFromFile( PROJ_HOME "/resources/gearFinal5.png" ) 		&&
 		gGearGradient[5].loadFromFile( PROJ_HOME "/resources/gearFinal6.png" ) 		&&
-		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png" ) &&
+		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradientWithNum.png" ) &&
 		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2_trial.png" ) 	&&
 		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png" ) 		&&
 		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont )	&&
@@ -187,7 +192,8 @@ bool loadMedia()
 		gCarMapMarkTexture.loadFromFile( PROJ_HOME "/resources/map_marker.png" ) &&
 		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/btLogo2.png" ) &&
 		gpsNOSIgnalTexture.loadFromFile( PROJ_HOME "/resources/gpsNOSIgnal.png" ) &&
-		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" );
+		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" ) &&
+        gArtHorzNeedleTexture.loadFromFile( PROJ_HOME "/resources/artHorzNeedle.png" );
 }
 
 
@@ -220,6 +226,7 @@ void close()
 	gCarMapMarkTexture.free();
 	gBlueToothTexture.free();
 	gpsNOSIgnalTexture.free();
+    gArtHorzNeedleTexture.free();
 
 	//Free global font
 	TTF_CloseFont( gFont );
@@ -296,7 +303,7 @@ void* gui_main(void* arg)
                     newLon += sensorData.latitudeLongitudeAltitude.c1;
                     newAlt += sensorData.latitudeLongitudeAltitude.c2;
                     yaw += sensorData.ypr.yaw;
-                    roll += sensorData.ypr.roll;
+                    roll += sensoPoint scrP(0,0);rData.ypr.roll;
                     pitch += sensorData.ypr.pitch;
                 }
                 newLat = newLat/LEN_FILTER;
@@ -347,7 +354,7 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
-                    //printf("1newLat,newLon = (%f,%f)\n",newLat,newLon);
+                    //printf("1nePoint scrP(0,0);wLat,newLon = (%f,%f)\n",newLat,newLon);
                 }
                 else if(counter<=200){
                     newLat = 35 + 0.001*cos(PI-PI/50*counter)+0.002;
@@ -390,23 +397,28 @@ void* gui_main(void* arg)
 
 				//Render current frame
 				//pngs
-				gGearGradient[(RPMint*6)/MAX_RPM].renderRelToScrn(RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y );
+				gGearGradient[(RPMint*6)/MAX_RPM].renderRelToScrn(RELATIVE_PLACE_RPM_X+0.5, RELATIVE_PLACE_RPM_Y );
 				gArtHorzTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X - 0.002 + 0.002, RELATIVE_PLACE_ARTHORZ_Y + 0.001 + 0.003 , 0.0 - horDeg);
 				gCarCrossTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X + 0.002, RELATIVE_PLACE_ARTHORZ_Y + 0.003 , 0.0);
-				gVelocityGradient.renderRelToScrn(RELATIVE_PLACE_VELOCITY_G_X, RELATIVE_PLACE_VELOCITY_G_Y);
-				gNeedleTexture.renderRelToScrnRel2Object(RELATIVE_PLACE_SPEEDOMETER_X, RELATIVE_PLACE_SPEEDOMETER_Y, gVelocityGradient, -50.0+degrees);
+				gVelocityGradient.renderRelToScrn(RELATIVE_PLACE_VELOCITY_G_X+0.45, RELATIVE_PLACE_VELOCITY_G_Y);
+				gNeedleTexture.renderRelToScrnRel2Object(RELATIVE_PLACE_SPEEDOMETER_X+0.45, RELATIVE_PLACE_SPEEDOMETER_Y, gVelocityGradient, -50.0+degrees);
 				gCarArrowTexture.renderRelToScrn(RELATIVE_PLACE_ARROW_X + 0.487,RELATIVE_PLACE_ARROW_Y - 0.985);
-				gCarMapMarkTexture.renderRelToScrn(RELATIVE_PLACE_ARROW_X + 0.482,RELATIVE_PLACE_ARROW_Y - 1.045);
+				if(mapPts_Prev.size()>1){
+					gCarMapMarkTexture.renderRelToScrn(((double)mapPts_Prev[0].X)/SCREEN_WIDTH - 0.005 ,((double)mapPts_Prev[0].Y)/SCREEN_HEIGHT - 0.025);
+					}
+				else if(mapPts.size()>1){
+					gCarMapMarkTexture.renderRelToScrn(((double)mapPts[0].X)/SCREEN_WIDTH - 0.005,((double)mapPts[0].Y)/SCREEN_HEIGHT - 0.025);
+					}
 				if(newLat == 0 && newLon == 0 && newAlt == 0)
                     gpsNOSIgnalTexture.renderRelToScrn(0.9,0.05);
                 else
                     gGPSSignalTexture.renderRelToScrn(0.9,0.05);
 				gBlueToothTexture.renderRelToScrn(0.965,0.065);
-
+                gArtHorzNeedleTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X + 0.002, RELATIVE_PLACE_ARTHORZ_Y + 0.003 , 0.0 - horDeg);
 				//txts
 				reloadText();
-				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
-				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
+				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X-0.8, RELATIVE_PLACE_FONT_GEAR_Y);
+				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X+0.33, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
 /********************Eden's block************************/
                 //printf("test1\n");
@@ -545,9 +557,47 @@ void* gui_main(void* arg)
                   //  utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
 
 
-                utils.coordinate2Scr(32.0 ,35.0 ,0.0 ,32.001 ,35.001 ,0.0 ,pitch ,yaw ,roll ,scrP);
-                thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
+                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0001 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
+                thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
+                //thickLineRGBA(gRenderer ,scrP.X - 20 ,scrP.Y ,scrP.X - 20,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
 
+                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0001,0.0,32.0,35.0002,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
+
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,200);
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,200);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+
+
+                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0002 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
+                thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
+
+                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0002,0.0,32.0,35.0004,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
+
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,200);
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,200);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+
+
+                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP);
+
+                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0004,0.0,32.0001,35.0005,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
+
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,250);
+                thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,250);
+                thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+
+                thickLineRGBA(gRenderer ,scrPLeft2.X ,scrPLeft2.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,200,200,200);
+                thickLineRGBA(gRenderer ,scrPRight2.X ,scrPRight2.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,200,200,200);
+
+                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                //utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0001 ,35.0005 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
+                thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
 			}

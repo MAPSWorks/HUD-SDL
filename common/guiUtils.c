@@ -563,34 +563,132 @@ void guiUtils::renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<
 void guiUtils::getPitchYawFromVec(std::vector<double>& vec, double& pitch,double& yaw)
 {
     yaw = atan2(vec[0],-vec[1]);
-    pitch = -atan2(sqrt(vec[0]*vec[0]+vec[1]*vec[1]),vec[2]);
+    pitch = -atan2(vec[2],sqrt(vec[0]*vec[0]+vec[1]*vec[1]));
 }
 
 bool guiUtils::coordinate2Scr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double pitch,double yaw,double roll,Point& scrP)
 {
+    std::vector<double> delR;
+
+    if(!coordinate2RelSpace(lat0,lon0,alt0,latP,lonP,altP,delR)){return false;}
+    if(!relSpace2Scrn(delR,pitch,yaw,roll,scrP)){return false;}
+    //printf("test coordinate2Scrn\n");
+    printf("scrP = (%d,%d)\n",scrP.X,scrP.Y);
+
+    return true;
+}
+
+bool guiUtils::coordinate2RelSpace(double lat0,double lon0,double alt0,double latP,double lonP,double altP,std::vector<double>& delR)
+{
     Coordinate R0(0,0);
     Coordinate RP(0,0);
-    Point origin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
-    double Rpitch;
-    double Ryaw;
-    std::vector<double> delR;
+
     gps2linDist(R0,lat0,lon0);
     gps2linDist(RP,latP,lonP);
     delR.push_back(RP.X-R0.X);
     delR.push_back(RP.Y-R0.Y);
     delR.push_back(altP-alt0);
-    if(sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2])==0) {return false;}
-    getPitchYawFromVec(delR,Rpitch,Ryaw);
-    scrP.Y = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch - PI/180*pitch);
-    scrP.X = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Ryaw - PI/180*yaw);
-    rotatePoint(scrP,scrP,origin,-roll);
 
-    printf("R0 = (%f,%f,%f)    RP = (%f,%f,%f)    delR = (%f,%f,%f)\nRpitch = %f     Ryaw = %f \nscrP = (%d,%d) \n",R0.X,R0.Y,alt0 , RP.X,RP.Y,altP , delR[0],delR[1],delR[2] , Rpitch , Ryaw , scrP.X,scrP.Y);
-    //Special cases: delR=0 or point not on screen
+    if(sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2])==0) {return false;}
     return true;
 }
 
-///
+bool guiUtils::onScrn(double pitch,double yaw)
+{
+    int pitchInt;
+    int yawInt;
+
+    pitchInt = (int)pitch;
+
+    double resPitch = pitch - (double)pitchInt;
+
+    pitchInt = pitchInt%180;
+
+    pitch = (double)pitchInt + resPitch;
 
 
+    yawInt = (int)yaw;
+
+    double resYaw = yaw - (double)yawInt;
+
+    yawInt = yawInt%360;
+
+    yaw = (double)yawInt + resYaw;
+
+
+    printf("th pitch = %f pitch = %f\n",180*atan(PHYSICAL_SCREEN_HEIGHT/2/EYE_RELEIF),pitch);
+    printf("th yaw = %f yaw = %f\n",180*atan(0.5),yaw);
+    if(abs(pitch) > 180/PI*atan(PHYSICAL_SCREEN_HEIGHT/2/EYE_RELEIF) || abs(yaw) > 180/PI*atan(0.5))
+    {
+        return false;
+    }
+    printf("test onScrn == true\n");
+    return true;
+}
+
+bool guiUtils::relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,double roll,Point& scrP)
+{
+    double Rpitch;
+    double Ryaw;
+    Point origin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
+
+    getPitchYawFromVec(delR,Rpitch,Ryaw);
+    //if(!onScrn(180*Rpitch-pitch,180*Ryaw-yaw)){return false;}
+
+    scrP.Y = SCREEN_HEIGHT/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch + PI/180*pitch);
+    scrP.X = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Ryaw - PI/180*yaw);
+    rotatePoint(scrP,scrP,origin,90+roll);
+    return true;
+}
+
+bool guiUtils::sideLines2Scrn(double pitch,double yaw,double roll,double lat0,double lon0,double alt0,double latP1,double lonP1,double altP1,double latP2,double lonP2,double altP2,Point& scrPLeft1, Point& scrPRight1,Point& scrPLeft2, Point& scrPRight2)
+{
+    std::vector<double> delR1;
+    std::vector<double> delR2;
+    std::vector<double> e12;
+    std::vector<double> o12;
+
+    std::vector<double> delR1_Left;
+    std::vector<double> delR1_Right;
+    std::vector<double> delR2_Left;
+    std::vector<double> delR2_Right;
+
+    if(!coordinate2RelSpace(lat0,lon0,alt0,latP1,lonP1,altP1,delR1)){return false;}
+    if(!coordinate2RelSpace(lat0,lon0,alt0,latP2,lonP2,altP2,delR2)){return false;}
+
+    e12.push_back(delR2[0] - delR1[0]);
+    e12.push_back(delR2[1] - delR1[1]);
+
+    e12[0] = e12[0]/sqrt(e12[0]*e12[0] + e12[1]*e12[1]);
+    e12[1] = e12[1]/sqrt(e12[0]*e12[0] + e12[1]*e12[1]);
+
+    o12.push_back(e12[0]*ROAD_WIDTH);
+    o12.push_back(-e12[1]*ROAD_WIDTH);
+
+    delR1_Left.push_back(delR1[0] + o12[0]);
+    delR1_Left.push_back(delR1[1] + o12[1]);
+    delR1_Left.push_back(delR1[2]);
+
+    delR1_Right.push_back(delR1[0] - o12[0]);
+    delR1_Right.push_back(delR1[1] - o12[1]);
+    delR1_Right.push_back(delR1[2]);
+
+    delR2_Left.push_back(delR2[0] + o12[0]);
+    delR2_Left.push_back(delR2[1] + o12[1]);
+    delR2_Left.push_back(delR2[2]);
+
+    delR2_Right.push_back(delR2[0] - o12[0]);
+    delR2_Right.push_back(delR2[1] - o12[1]);
+    delR2_Right.push_back(delR2[2]);
+
+    if(!relSpace2Scrn(delR1_Left,pitch,yaw,roll,scrPLeft1)){return false;}
+    if(!relSpace2Scrn(delR1_Right,pitch,yaw,roll,scrPRight1)){return false;}
+    if(!relSpace2Scrn(delR2_Left,pitch,yaw,roll,scrPLeft2)){return false;}
+    if(!relSpace2Scrn(delR2_Right,pitch,yaw,roll,scrPRight2)){return false;}
+
+    printf("scrPLeft1 = (%d,%d) scrPRight1 = (%d,%d)\n",scrPLeft1.X,scrPLeft1.Y,scrPRight1.X,scrPRight1.Y);
+    printf("scrPLeft2 = (%d,%d) scrPRight2 = (%d,%d)\n",scrPLeft2.X,scrPLeft2.Y,scrPRight2.X,scrPRight2.Y);
+
+    return true;
+}
 
