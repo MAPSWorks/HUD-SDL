@@ -17,7 +17,7 @@ void* sensors_main(void* arg) {
 		//initialize the sensor, return if not succeeded.
 		if(initAsyncSensors(&vn200) == -1) {
 			if(connected) {
-				sprintf(gps_buf, 	"Sensors unreachable");
+				sprintf(gps_buf, 	"TEST");
 				sprintf(sensors_buf, 	"Sensors unreachable");
 				sprintf(velocity_buf, 	"Sensors unreachable");
 			}

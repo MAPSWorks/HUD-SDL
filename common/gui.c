@@ -18,7 +18,6 @@ extern bool globQuitSig;
 std::vector<Point> pts;
 std::vector<Point> Updated_pts;
 
-
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
@@ -61,7 +60,7 @@ bool init()
 	}
 	else
 	{
-		
+
 		//Set texture filtering to linear
 		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
 		{
@@ -246,6 +245,8 @@ void* gui_main(void* arg)
 {
 	short degrees = 0;
 	double horDeg = 0;
+	vector<short> velocity;
+	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
 	Uint32 startTime = SDL_GetTicks();
@@ -253,6 +254,11 @@ void* gui_main(void* arg)
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(300,400));
 	pts.push_back(Point(400,200));
+
+	Updated_pts.push_back(Point(0,0));
+	Updated_pts.push_back(Point(0,0));
+	Updated_pts.push_back(Point(0,0));
+
 	uint ptsIndex = 0;
 
 	//std::vector<Point> pts_Updated;
@@ -291,7 +297,7 @@ void* gui_main(void* arg)
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				//printf("FPS: %lf\n", fps);
 				horDeg = (double)sensorData.ypr.roll;
-				
+
 
 
 
@@ -329,19 +335,18 @@ void* gui_main(void* arg)
 
 				//load the polygon:
 				//Try to rotate according to Yaw
-				//rotatePts(Xtrack, Ytrack, n, 0.25 , 200,200 ,Xtrack_Updated ,Ytrack_Updated);
-				//shiftPTS(Xtrack,Ytrack,n,Xtrack[(degrees/10+1)%n]-Xtrack[degrees/10%n],Ytrack[(degrees/10+1)%n]-Ytrack[degrees/10%n],Xtrack_Updated, 	Ytrack_Updated);
-				
-				
+
+
 				//if (polygonRGBA(gRenderer,Xtrack_Updated, Ytrack_Updated,n,255, 255, 255, 155))
 					//printf("Priel Ya Manyak!");
-
+                Point p(300,300);
+                utils.rotateVec(pts , Updated_pts , p , 20);
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
-				{				
-					lineRGBA(gRenderer ,pts[ptsIndex-1].X ,pts[ptsIndex-1].Y ,pts[ptsIndex % pts.size()].X ,pts[ptsIndex % pts.size()].Y ,100,100,255,155);
-					//ptsUpdated.push_back(pts[ptsIndex]);	
+				{
+					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
+					//ptsUpdated.push_back(pts[ptsIndex]);
 				}
-				
+
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}
