@@ -1,4 +1,7 @@
 #include "sensorenv.h"
+#include "common.h"
+
+extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE];
 
 /* Change the connection settings to your configuration. */
 const char* const COM_PORT = "//dev//ttyUSB0";
@@ -8,17 +11,23 @@ void* sensors_main(void* arg) {
 
 	VN_ERROR_CODE errorCode;
 	Vn200 vn200;
-	char* buf = (char*)arg;
 
 	printf("Initializing sensornav\n");
 
       	//initialize the sensor, return if not succeeded.
 	if(initAsyncSensors(&vn200) == -1) {
-		sprintf(buf,
-			"Dummy YPR:\n"
-			"YPR.Yaw:                %+#7.2f\n"
-			"YPR.Pitch:              %+#7.2f\n"
-			"YPR.Roll:               %+#7.2f\n",
+		sprintf(gps_buf,
+			"GPS.Lat: %+#7.2f, "
+			"GPS.Lon: %+#7.2f, "
+			"GPS.Alt: %+#7.2f\n",
+			1.23,
+			4.56,
+			7.89);
+
+		sprintf(sensors_buf,
+			"YPR.Yaw: %+#7.2f, "
+			"YPR.Pitch: %+#7.2f, "
+			"YPR.Roll: %+#7.2f",
 			1.23,
 			4.56,
 			7.89);
@@ -32,16 +41,23 @@ void* sensors_main(void* arg) {
 
 		vn200_getCurrentAsyncData(&vn200, &data);
 
-		sprintf(buf,
-			"INS Solution:\n"
-			"YPR.Yaw:                %+#7.2f\n"
-			"YPR.Pitch:              %+#7.2f\n"
-			"YPR.Roll:               %+#7.2f\n",
+		sprintf(gps_buf,
+			"GPS.Lat: %+#7.2f, "
+			"GPS.Lon: %+#7.2f, "
+			"GPS.Alt: %+#7.2f\n",
+			data.gpsPosLla.c0,
+			data.gpsPosLla.c1,
+			data.gpsPosLla.c2);
+
+		sprintf(sensors_buf,
+			"YPR.Yaw: %+#7.2f, "
+			"YPR.Pitch: %+#7.2f, "
+			"YPR.Roll: %+#7.2f",
 			data.ypr.yaw,
 			data.ypr.pitch,
 			data.ypr.roll);
 
-		usleep(500000);
+		usleep(REFRESH_RATE);
 	}
 
 	errorCode = vn200_disconnect(&vn200);

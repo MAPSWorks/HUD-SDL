@@ -1,14 +1,17 @@
-CC		= gcc
-CFLAGS		= -Wall -pthread -g -std=gnu99
-LIBS		= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt -lpthread
+# basic
+CC		= g++
+CFLAGS		= -Wall -pthread -g -std=c++11
 
-#project
+# common
+LIBS		= -lm -lbluetooth -lrt -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf
+INCS		= -I$(PROJBASE)/inc -I/usr/include/SDL2
+
+# project
 PROJBASE	= .
 
 # dirs
 COMMON		= $(PROJBASE)/common
 SRCS		= $(wildcard $(COMMON)/*.c)
-INCDIRS		= $(PROJBASE)/inc
 MISC		= $(PROJBASE)/misc
 
 # objects
@@ -16,18 +19,18 @@ OBJS		= $(SRCS:.c=.o)
 MAIN		= $(PROJBASE)/main.o
 BT_CL		= $(MISC)/bt_client.o
 
-#outputs
+# outputs
 BINDIR		= $(PROJBASE)/bin
 BIN		= $(BINDIR)/project.out
 BT_CL_BIN	= $(BINDIR)/bt_cl.out
 
-#Cleanup
+# cleanup
 O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL_BIN) $(BT_CL)
 
 default: project
 
 %.o: %.c
-	$(CC) $(CFLAGS) -I$(INCDIRS) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 project: $(MAIN) $(OBJS)
 	@mkdir -p $(BINDIR)
