@@ -12,7 +12,8 @@ PROJBASE	= .
 COMMON	= $(PROJBASE)/common
 INCDIRS	= $(PROJBASE)/inc
 MAIN	= $(PROJBASE)/main.o
-BIN	= $(PROJBASE)/bin/project.out
+BINDIR	= $(PROJBASE)/bin
+BIN	= $(BINDIR)/project.out
 
 #opengl test
 SANDBOX	= opengl_sandbox/opengl_test
@@ -27,6 +28,7 @@ default: project
 	$(CC) $(CFLAGS) -I$(INCDIRS) -c $< -o $@
 
 project: $(MAIN) $(COMMONS)
+	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BIN)
 
 opengl_test: $(TEST_O) $(COMMONS)
@@ -35,3 +37,4 @@ opengl_test: $(TEST_O) $(COMMONS)
 clean:
 	-rm -f *.o
 	-rm -f $(O2CLEAN)
+	-rm -rf $(BINDIR)
