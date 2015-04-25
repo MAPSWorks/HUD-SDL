@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include "vectornav.h"
 #include "sensorenv.h"
+#include "bluetooth_top.h"
 
 /* Change the connection settings to your configuration. */
 const char* const COM_PORT = "//dev//ttyUSB0";
