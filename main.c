@@ -4,6 +4,8 @@
 #include "sensorenv.h"
 #include "bluetooth_top.h"
 
+// This is a test comment
+
 /* Change the connection settings to your configuration. */
 const char* const COM_PORT = "//dev//ttyUSB0";
 const int BAUD_RATE = 115200;
