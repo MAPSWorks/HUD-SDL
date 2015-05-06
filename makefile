@@ -1,5 +1,5 @@
 CC	= gcc
-CFLAGS	= -Wall -pthread
+CFLAGS	= -Wall -pthread -g
 LIBS	= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt
 
 #project
