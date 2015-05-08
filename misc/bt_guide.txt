@@ -1,0 +1,26 @@
+# first you may need to reset the device
+sudo hciconfig hci0 reset
+
+# initiate pairing
+bluez-simple-agent hci0 XX:XX:XX:XX:XX:XX
+
+# add as a trusted device
+sudo bluez-test-device trusted XX:XX:XX:XX:XX:XX yes
+
+# see what services are supported and if serial port is available
+sdptool browse local | more
+
+# if serial port not available, add serial port in channel 22
+sdptool add --channel=22 SP
+
+# listen using /dev/rfcomm0 on port 22 for incoming serial bluetooth communication
+sudo rfcomm listen /dev/rfcomm0 22
+
+# this is the part you need to connect to the bluetooth from your android device and start sending messages to the host machine
+
+# using another terminal you can read the input from the remote device:
+cat /dev/rfcomm0
+
+# using yet another terminal you can send strings in the following manner:
+echo test > /dev/rfcomm0
+
