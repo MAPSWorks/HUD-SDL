@@ -27,4 +27,3 @@ project: $(MAIN) $(OBJS)
 clean:
 	-rm -f *.o
 	-rm -f $(O2CLEAN)
-	-rm -rf $(BINDIR)

@@ -13,9 +13,9 @@ const int BAUD_RATE = 115200;
 int main()
 {
 	
-	VN_ERROR_CODE errorCode;
-	Vn200 vn200;
-	int i;
+//	VN_ERROR_CODE errorCode;
+//	Vn200 vn200;
+//	int i;
 //	bool isSensorConnected = false;
 //	printf(isSensorConnected ? "true" : "false");	
 
@@ -72,5 +72,6 @@ int main()
 		}
 //	}                          */////
 	//printf("Reached endmain");
-	return BT_connect();
+	BT_main();
+	return 0;
 }
