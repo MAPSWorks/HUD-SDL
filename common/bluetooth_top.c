@@ -14,20 +14,25 @@
 
 
 int BT_main() {
-	pid_t pid = fork();
-
-	if(pid < 0) {		//	error
-		perror("Unable to fork process");
-		return 1;
-	} else if (pid) {	//	child
-		char* args[] = { "listen", "/dev/rfcomm0", "22", NULL };
-		execvp("rfcomm",args);
-		perror("Unable to execute command");
-		return 1;
-	} else {		//	father
-		int status;
-		waitpid(pid, &status, 0);
-	}
+	
+	printf("Initializing BT_server()\n");
+	BT_server();
+	
+//	pid_t pid = fork();
+//
+//	if(pid < 0) {		//	error
+//		perror("Unable to fork process");
+//		return 1;
+//	} else if (pid) {	//	child
+//		//char* args[] = { "listen", "/dev/rfcomm0", "22", NULL };
+//		char* args[] = { "sdptool","browse","local", NULL };
+//		execvp(*args,args);
+//		perror("Unable to execute command");
+//		return 1;
+//	} else {		//	father
+//		int status;
+//		waitpid(pid, &status, 0);
+//	}
 	return 0;
 }
 
@@ -51,6 +56,7 @@ int BT_server() {
 	listen(s, 1);
 
 	// accept one connection
+	printf("Waiting for connection\n");
 	client = accept(s, (struct sockaddr *)&rem_addr, &opt);
 
 	ba2str( &rem_addr.rc_bdaddr, buf );
@@ -58,9 +64,18 @@ int BT_server() {
 	memset(buf, 0, sizeof(buf));
 
 	// read data from the client
-	bytes_read = read(client, buf, sizeof(buf));
-	if( bytes_read > 0 ) {
-		printf("received [%s]\n", buf);
+	while(1) {
+		bytes_read = read(client, buf, sizeof(buf));
+		if( bytes_read > 0 ) {
+			printf("received [%s]\n", buf);
+		}
+		printf("reply>");
+		//send a message
+		char user_input[1024] = { 0 };
+		fgets(user_input,1024,stdin);
+		strcpy(buf,user_input);
+		printf("sending %s\n", user_input);
+		write(client, buf, sizeof(buf));
 	}
 
 	// close connection
