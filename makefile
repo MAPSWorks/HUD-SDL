@@ -1,6 +1,6 @@
 CC	= gcc
 CFLAGS	= -Wall -pthread -g -std=gnu99
-LIBS	= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt
+LIBS	= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt -lpthread
 
 #project
 PROJBASE	= .

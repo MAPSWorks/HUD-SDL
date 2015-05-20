@@ -11,21 +11,52 @@
 #include "bluetooth_top.h"
 #include <errno.h>
 #include <wait.h>
+#include <pthread.h>
 
 
-int BT_main() {
-	BT_server();
+void* bt_main(void* arg) {
+	bt_server((char*)arg);
 	return 0;
 }
 
-int BT_server() {
+struct arg {
+	char* buf;
+	char* globuf;
+	int client;
+};
+
+void* send_messages(void* arg) {
+	struct arg* params = (struct arg*)arg;
+	char* wr_buf = 	params->buf;
+	int client = 	params->client;
+	int status = 0;
+
+	while(1) {
+		fgets(wr_buf,BUF_SIZE,stdin);
+		status = write(client, wr_buf, BUF_SIZE);
+		if( status < 0 ) perror("uh oh");
+	}
+}
+
+void* recieve_messages(void* arg) {
+	struct arg* params = (struct arg*)arg;
+	char* rd_buf = 	params->buf;
+	int client = 	params->client;
+	int bytes_read = 0;
+
+	while(1) {
+		bytes_read = read(client, rd_buf, BUF_SIZE);
+		if( bytes_read > 0 ) printf("%s",rd_buf);
+	}
+}
+
+int bt_server(char* globuf) {
 	struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
-	char wr_buf[1024] = { 0 }, rd_buf[1024] = { 0 };
-	int s, client, bytes_read, status;
-	pid_t pid;
+	char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
+	int s, client;
 	socklen_t opt = sizeof(rem_addr);
 
-	printf("Initializing BT_server()\n");
+	printf("Initializing bt_server()\n");
 
 	// allocate socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -49,95 +80,19 @@ int BT_server() {
 	memset(wr_buf, 0, sizeof(wr_buf));
 
 	// read data from the client
-	pid = fork();
-	if(pid < 0) perror("Could not fork process!");
-	if(pid) {
-		while(1) {
-			//send a message
-			fgets(wr_buf,1024,stdin);
-			status = write(client, wr_buf, sizeof(wr_buf));
-			if( status < 0 ) perror("uh oh");
-		}
-	} else {
-		while(1) {
-			//recieve message
-			bytes_read = read(client, rd_buf, sizeof(rd_buf));
-			if( bytes_read > 0 ) {
-				printf("%s", rd_buf);
-			}
-		}
-	}
+	pthread_t outmsg_th, inmsg_th;
+	struct arg outmsg_args = { wr_buf, globuf, client };
+	struct arg inmsg_args = { rd_buf, globuf, client };
+
+	pthread_create(&outmsg_th,	NULL,	send_messages,		&outmsg_args);
+	pthread_create(&inmsg_th,	NULL,	recieve_messages,	&inmsg_args);
+
+	pthread_join(outmsg_th,	NULL);
+	pthread_join(inmsg_th,	NULL);
 
 	// close connection
 	close(client);
 	close(s);
-	return 0;
-}
-
-int BT_connect() {
-	struct sockaddr_rc addr = { 0 };
-	int s, status;
-	char dest[18] = "00:11:67:C3:CB:EF";
-
-	printf("Attempting connection to address: %s\n",dest);
-
-	// allocate a socket
-	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-
-	// set the connection parameters (who to connect to)
-	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) 22;	//	changed to 22
-	str2ba( dest, &addr.rc_bdaddr );
-
-	// connect to server
-	status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
-	// send a message
-	if( status == 0 ) {
-		status = write(s, "hello!", 6);
-	}
-
-	if( status < 0 ) perror("uh oh");
-
-	close(s);
-
-	return 0;
-}
-
-int BT_scan() {
-	inquiry_info *ii = NULL;
-	int max_rsp, num_rsp;
-	int dev_id, sock, len, flags;
-	int i;
-	char addr[19] = { 0 };
-	char name[248] = { 0 };
-
-	dev_id = hci_get_route(NULL);
-	sock = hci_open_dev( dev_id );
-	if (dev_id < 0 || sock < 0) {
-		perror("opening socket");
-		exit(1);
-	}
-
-	len  = 8;
-	max_rsp = 255;
-	flags = IREQ_CACHE_FLUSH;
-	ii = (inquiry_info*)malloc(max_rsp * sizeof(inquiry_info));
-
-	num_rsp = hci_inquiry(dev_id, len, max_rsp, NULL, &ii, flags);
-	if( num_rsp < 0 ) perror("hci_inquiry");
-
-	for (i = 0; i < num_rsp; i++) {
-		ba2str(&(ii+i)->bdaddr, addr);
-		memset(name, 0, sizeof(name));
-		if (hci_read_remote_name(sock, &(ii+i)->bdaddr, sizeof(name), 
-					name, 0) < 0)
-			strcpy(name, "[unknown]");
-		printf("%s  %s\n", addr, name);
-	}
-
-	close( sock );
-	free(ii);
-
 	return 0;
 }
 

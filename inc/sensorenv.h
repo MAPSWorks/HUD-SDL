@@ -7,7 +7,7 @@
 #include "vectornav.h"
 
 int initAsyncSensors(Vn200* vn200);
-int sensors_main();
+void* sensors_main(void* arg);
 
 
 #endif /* _SENSORENVS_H_ */

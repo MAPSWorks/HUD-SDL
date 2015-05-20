@@ -4,70 +4,51 @@
 const char* const COM_PORT = "//dev//ttyUSB0";
 const int BAUD_RATE = 115200;
 
-int sensors_main() {
+void* sensors_main(void* arg) {
+
 	VN_ERROR_CODE errorCode;
 	Vn200 vn200;
 	int i;
-	bool isSensorConnected = false;
-	printf(isSensorConnected ? "true" : "false");	
+	char* buf = (char*)arg;
 
       	//initialize the sensor, return if not succeeded.
-	if ( isSensorConnected) {
-		initAsyncSensors(&vn200); 
-		isSensorConnected = false;
+	if(initAsyncSensors(&vn200) == -1) {
+		printf("error initializing device\n");
+		return 0;
 	}
 
-	printf(isSensorConnected ? "true" : "false");	
-	//example
-	if (isSensorConnected) {
+	for (i = 0; i < 10; i++) {
 
-		for (i = 0; i < 10; i++) {
+		VnDeviceCompositeData data;
 
-			VnDeviceCompositeData data;
-	
-			vn200_getCurrentAsyncData(&vn200, &data);
-	
-			printf("INS Solution:\n"
-				"  YPR.Yaw:                %+#7.2f\n"
-				"  YPR.Pitch:              %+#7.2f\n"
-				"  YPR.Roll:               %+#7.2f\n"
-				"  LLA.Latitude:           %+#7.2f\n"
-				"  LLA.Longitude:          %+#7.2f\n"
-				"  LLA.Altitude:           %+#7.2f\n"
-				"  Velocity.North:         %+#7.2f\n"
-				"  Velocity.East:          %+#7.2f\n"
-				"  Velocity.Down:          %+#7.2f\n",
-				data.ypr.yaw,
-				data.ypr.pitch,
-				data.ypr.roll,
-				data.latitudeLongitudeAltitude.c0,
-				data.latitudeLongitudeAltitude.c1,
-				data.latitudeLongitudeAltitude.c2,
-				data.velocity.c0,
-				data.velocity.c1,
-				data.velocity.c2);
-	
-			printf("\n\n");
-	
-			sleep(1);
-		}
-		errorCode = vn200_disconnect(&vn200);
-	
-		if (errorCode != VNERR_NO_ERROR)
-		{
-			printf("Error encountered when trying to disconnect from the sensor.\n");
-			
-			return 0;
-		}
-//	}                          ////
-	printf("Reached endmain");
+		vn200_getCurrentAsyncData(&vn200, &data);
+
+		sprintf(buf,
+			"INS Solution:\n"
+			"YPR.Yaw:                %+#7.2f\n"
+			"YPR.Pitch:              %+#7.2f\n"
+			"YPR.Roll:               %+#7.2f\n",
+			data.ypr.yaw,
+			data.ypr.pitch,
+			data.ypr.roll);
+
+		usleep(500000);
+	}
+	errorCode = vn200_disconnect(&vn200);
+
+	if (errorCode != VNERR_NO_ERROR)
+	{
+		printf("Error encountered when trying to disconnect from the sensor.\n");
+		
+		return 0;
+	}
+
+	return 0;
 }
 
 int initAsyncSensors(Vn200* vn200) 
 {
 	VN_ERROR_CODE errorCode;
-	const char* const COM_PORT = "//dev//ttyUSB0";
-	const int BAUD_RATE = 115200;
 
 	errorCode = vn200_connect(vn200,COM_PORT,BAUD_RATE);
 	
