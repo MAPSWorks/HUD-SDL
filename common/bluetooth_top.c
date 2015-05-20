@@ -14,33 +14,18 @@
 
 
 int BT_main() {
-	
-	printf("Initializing BT_server()\n");
 	BT_server();
-	
-//	pid_t pid = fork();
-//
-//	if(pid < 0) {		//	error
-//		perror("Unable to fork process");
-//		return 1;
-//	} else if (pid) {	//	child
-//		//char* args[] = { "listen", "/dev/rfcomm0", "22", NULL };
-//		char* args[] = { "sdptool","browse","local", NULL };
-//		execvp(*args,args);
-//		perror("Unable to execute command");
-//		return 1;
-//	} else {		//	father
-//		int status;
-//		waitpid(pid, &status, 0);
-//	}
 	return 0;
 }
 
 int BT_server() {
 	struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
-	char buf[1024] = { 0 };
-	int s, client, bytes_read;
+	char wr_buf[1024] = { 0 }, rd_buf[1024] = { 0 };
+	int s, client, bytes_read, status;
+	pid_t pid;
 	socklen_t opt = sizeof(rem_addr);
+
+	printf("Initializing BT_server()\n");
 
 	// allocate socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -59,23 +44,28 @@ int BT_server() {
 	printf("Waiting for connection\n");
 	client = accept(s, (struct sockaddr *)&rem_addr, &opt);
 
-	ba2str( &rem_addr.rc_bdaddr, buf );
-	fprintf(stderr, "accepted connection from %s\n", buf);
-	memset(buf, 0, sizeof(buf));
+	ba2str( &rem_addr.rc_bdaddr, wr_buf );
+	fprintf(stderr, "accepted connection from %s\n", wr_buf);
+	memset(wr_buf, 0, sizeof(wr_buf));
 
 	// read data from the client
-	while(1) {
-		bytes_read = read(client, buf, sizeof(buf));
-		if( bytes_read > 0 ) {
-			printf("received [%s]\n", buf);
+	pid = fork();
+	if(pid < 0) perror("Could not fork process!");
+	if(pid) {
+		while(1) {
+			//send a message
+			fgets(wr_buf,1024,stdin);
+			status = write(client, wr_buf, sizeof(wr_buf));
+			if( status < 0 ) perror("uh oh");
 		}
-		printf("reply>");
-		//send a message
-		char user_input[1024] = { 0 };
-		fgets(user_input,1024,stdin);
-		strcpy(buf,user_input);
-		printf("sending %s\n", user_input);
-		write(client, buf, sizeof(buf));
+	} else {
+		while(1) {
+			//recieve message
+			bytes_read = read(client, rd_buf, sizeof(rd_buf));
+			if( bytes_read > 0 ) {
+				printf("%s", rd_buf);
+			}
+		}
 	}
 
 	// close connection
@@ -150,3 +140,4 @@ int BT_scan() {
 
 	return 0;
 }
+
