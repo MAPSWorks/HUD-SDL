@@ -16,7 +16,7 @@ int main(int argc, char **argv)
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) 22;	//	XXX the channel is important! XXX
+	addr.rc_channel = (uint8_t) 22;	//	XXX the channel is important and should match the server channel! XXX
 	str2ba( dest, &addr.rc_bdaddr );
 
 	// connect to server

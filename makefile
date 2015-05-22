@@ -4,16 +4,25 @@ LIBS	= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt -lpthread
 
 #project
 PROJBASE	= .
-COMMON	= $(PROJBASE)/common
-SRCS	= $(wildcard $(COMMON)/*.c)
-OBJS	= $(SRCS:.c=.o)
-INCDIRS	= $(PROJBASE)/inc
-MAIN	= $(PROJBASE)/main.o
-BINDIR	= $(PROJBASE)/bin
-BIN	= $(BINDIR)/project.out
+
+# dirs
+COMMON		= $(PROJBASE)/common
+SRCS		= $(wildcard $(COMMON)/*.c)
+INCDIRS		= $(PROJBASE)/inc
+MISC		= $(PROJBASE)/misc
+
+# objects
+OBJS		= $(SRCS:.c=.o)
+MAIN		= $(PROJBASE)/main.o
+BT_CL		= $(MISC)/bt_client.o
+
+#outputs
+BINDIR		= $(PROJBASE)/bin
+BIN		= $(BINDIR)/project.out
+BT_CL_OUT	= $(BINDIR)/bt_cl.out
 
 #Cleanup
-O2CLEAN	= $(OBJS) $(MAIN) $(BIN)
+O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL)
 
 default: project
 
@@ -23,6 +32,10 @@ default: project
 project: $(MAIN) $(OBJS)
 	@mkdir -p $(BINDIR)
 	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BIN)
+
+bt_client: $(BT_CL)
+	@mkdir -p $(BINDIR)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BT_CL_OUT)
 
 clean:
 	-rm -f *.o
