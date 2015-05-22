@@ -1,7 +1,6 @@
 #ifndef _SENSORENVS_H_
 #define _SENSORENVS_H_
 
-
 #include <stdio.h>
 #include <unistd.h>
 #include "vectornav.h"

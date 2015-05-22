@@ -28,7 +28,7 @@ struct arg {
 void* send_messages(void* arg) {
 	struct arg* params = (struct arg*)arg;
 	char* wr_buf = 	params->buf;
-	int client = 	params->client;
+	int client   = 	params->client;
 	int status = 0;
 
 	while(1) {
@@ -40,13 +40,15 @@ void* send_messages(void* arg) {
 
 void* recieve_messages(void* arg) {
 	struct arg* params = (struct arg*)arg;
+	char* globuf =	params->globuf;
 	char* rd_buf = 	params->buf;
-	int client = 	params->client;
-	int bytes_read = 0;
+	int client   = 	params->client;
 
 	while(1) {
+		int bytes_read = 0;
 		bytes_read = read(client, rd_buf, BUF_SIZE);
-		if( bytes_read > 0 ) printf("%s",rd_buf);
+		if(!rd_buf[0] && bytes_read == 16) continue;
+		strcpy(globuf,rd_buf);
 	}
 }
 
@@ -56,7 +58,7 @@ int bt_server(char* globuf) {
 	int s, client;
 	socklen_t opt = sizeof(rem_addr);
 
-	printf("Initializing bt_server()\n");
+	printf("Initializing bt_server\n");
 
 	// allocate socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
@@ -76,13 +78,13 @@ int bt_server(char* globuf) {
 	client = accept(s, (struct sockaddr *)&rem_addr, &opt);
 
 	ba2str( &rem_addr.rc_bdaddr, wr_buf );
-	fprintf(stderr, "accepted connection from %s\n", wr_buf);
+	sprintf(globuf, "accepted connection from %s\n", wr_buf);
 	memset(wr_buf, 0, sizeof(wr_buf));
 
-	// read data from the client
+	// create two threads - one for read and one for write
 	pthread_t outmsg_th, inmsg_th;
-	struct arg outmsg_args = { wr_buf, globuf, client };
-	struct arg inmsg_args = { rd_buf, globuf, client };
+	struct arg outmsg_args 	= { wr_buf, globuf, client };
+	struct arg inmsg_args 	= { rd_buf, globuf, client };
 
 	pthread_create(&outmsg_th,	NULL,	send_messages,		&outmsg_args);
 	pthread_create(&inmsg_th,	NULL,	recieve_messages,	&inmsg_args);

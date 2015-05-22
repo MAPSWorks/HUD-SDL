@@ -8,16 +8,25 @@ void* sensors_main(void* arg) {
 
 	VN_ERROR_CODE errorCode;
 	Vn200 vn200;
-	int i;
 	char* buf = (char*)arg;
+
+	printf("Initializing sensornav\n");
 
       	//initialize the sensor, return if not succeeded.
 	if(initAsyncSensors(&vn200) == -1) {
-		printf("error initializing device\n");
+		sprintf(buf,
+			"Dummy YPR:\n"
+			"YPR.Yaw:                %+#7.2f\n"
+			"YPR.Pitch:              %+#7.2f\n"
+			"YPR.Roll:               %+#7.2f\n",
+			1.23,
+			4.56,
+			7.89);
+
 		return 0;
 	}
 
-	for (i = 0; i < 10; i++) {
+	while (1) {
 
 		VnDeviceCompositeData data;
 
@@ -34,14 +43,11 @@ void* sensors_main(void* arg) {
 
 		usleep(500000);
 	}
+
 	errorCode = vn200_disconnect(&vn200);
 
 	if (errorCode != VNERR_NO_ERROR)
-	{
-		printf("Error encountered when trying to disconnect from the sensor.\n");
-		
-		return 0;
-	}
+		perror("Error encountered when trying to disconnect from the sensor.\n");
 
 	return 0;
 }
@@ -49,21 +55,18 @@ void* sensors_main(void* arg) {
 int initAsyncSensors(Vn200* vn200) 
 {
 	VN_ERROR_CODE errorCode;
-
 	errorCode = vn200_connect(vn200,COM_PORT,BAUD_RATE);
 	
 	//the struct VnDeviceCompositeData in vndevice.h contain all posible variables.
 
 	/* Make sure the user has permission to use the COM port. */
 	if (errorCode == VNERR_PERMISSION_DENIED) {
-
 		printf("Current user does not have permission to open the COM port.\n");
 		printf("Try running again using 'sudo'.\n");
 
 		return -1;
 	}
-	else if (errorCode != VNERR_NO_ERROR)
-	{
+	else if (errorCode != VNERR_NO_ERROR) {
 		printf("Error encountered when trying to connect to the sensor.\n");
 		return -1;
 	}

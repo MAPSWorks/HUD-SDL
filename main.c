@@ -5,14 +5,28 @@
 #include "bluetooth_top.h"
 #include <pthread.h>
 
-struct buffs {
+#define REFRESH_RATE 100000
+
+static struct buffs {
 	char* sensors_buf;
 	char* bt_buf;
 };
 
 static int pretty_print(struct buffs* buffers) {
-	//puts(buffers->sensors_buf);
-	//puts(buffers->bt_buf);
+
+	puts("###################################");
+
+	// print sensor buffer
+	fputs(buffers->sensors_buf,stdout);
+
+	// print bt buffer
+	if(buffers->bt_buf[0])
+		fputs(buffers->bt_buf,stdout);
+	else
+		fputs("Bluetooth buffer empty\n",stdout);
+
+	puts("###################################");
+
 	return 0;
 }
 
@@ -20,8 +34,7 @@ static int pretty_print(struct buffs* buffers) {
 int main()
 {
 	pthread_t sensors_thread, bt_thread;
-	char sensors_buf[1024];
-	char bt_buf[1024];
+	char sensors_buf[1024] = { 0 }, bt_buf[1024] = { 0 };
 	struct buffs buffers = { sensors_buf, bt_buf };
 
 	pthread_create(&sensors_thread,	NULL,	sensors_main,	sensors_buf);
@@ -29,7 +42,7 @@ int main()
 
 	while(1) {
 		pretty_print(&buffers);
-		sleep(1);
+		usleep(REFRESH_RATE);
 	}
 
 	pthread_join(sensors_thread,	NULL);
