@@ -1,6 +1,6 @@
-CC	= gcc
-CFLAGS	= -Wall -pthread -g -std=gnu99
-LIBS	= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt -lpthread
+CC		= gcc
+CFLAGS		= -Wall -pthread -g -std=gnu99
+LIBS		= -lEGL -lGLESv2 -Wall -lm -lX11 -lbluetooth -lrt -lpthread
 
 #project
 PROJBASE	= .
@@ -19,10 +19,10 @@ BT_CL		= $(MISC)/bt_client.o
 #outputs
 BINDIR		= $(PROJBASE)/bin
 BIN		= $(BINDIR)/project.out
-BT_CL_OUT	= $(BINDIR)/bt_cl.out
+BT_CL_BIN	= $(BINDIR)/bt_cl.out
 
 #Cleanup
-O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL)
+O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL_BIN) $(BT_CL)
 
 default: project
 
@@ -35,7 +35,7 @@ project: $(MAIN) $(OBJS)
 
 bt_client: $(BT_CL)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BT_CL_OUT)
+	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BT_CL_BIN)
 
 clean:
 	-rm -f *.o
