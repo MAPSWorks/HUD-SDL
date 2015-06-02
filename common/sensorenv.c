@@ -2,6 +2,7 @@
 #include "common.h"
 
 extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern VnDeviceCompositeData sensorData;
 
 /* Change the connection settings to your configuration. */
 const char* const COM_PORT = "//dev//ttyUSB0";
@@ -37,27 +38,25 @@ void* sensors_main(void* arg) {
 
 	while (1) {
 
-		VnDeviceCompositeData data;
-
-		vn200_getCurrentAsyncData(&vn200, &data);
+		vn200_getCurrentAsyncData(&vn200, &sensorData);
 
 		sprintf(gps_buf,
 			"GPS.Lat: %+#7.2f, "
 			"GPS.Lon: %+#7.2f, "
 			"GPS.Alt: %+#7.2f\n",
-			data.gpsPosLla.c0,
-			data.gpsPosLla.c1,
-			data.gpsPosLla.c2);
+			sensorData.gpsPosLla.c0,
+			sensorData.gpsPosLla.c1,
+			sensorData.gpsPosLla.c2);
 
 		sprintf(sensors_buf,
 			"YPR.Yaw: %+#7.2f, "
 			"YPR.Pitch: %+#7.2f, "
 			"YPR.Roll: %+#7.2f",
-			data.ypr.yaw,
-			data.ypr.pitch,
-			data.ypr.roll);
+			sensorData.ypr.yaw,
+			sensorData.ypr.pitch,
+			sensorData.ypr.roll);
 
-		usleep(REFRESH_RATE);
+		//usleep(SENS_REFRESH_RATE);
 	}
 
 	errorCode = vn200_disconnect(&vn200);

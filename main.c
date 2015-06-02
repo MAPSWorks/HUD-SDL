@@ -8,6 +8,8 @@
 #include <pthread.h>
 
 char gps_buf[BUF_SIZE] = { 0 }, sensors_buf[BUF_SIZE] = { 0 }, bt_buf[BUF_SIZE] = { 0 };
+VnDeviceCompositeData sensorData;
+
 
 static int pretty_print() {
 

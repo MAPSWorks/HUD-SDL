@@ -30,7 +30,7 @@ void* send_messages(void* arg) {
 	while(connected) {
 		strcpy(wr_buf,gps_buf);
 		if( write(client, wr_buf, BUF_SIZE) < 0 ) perror("uh oh");
-		usleep(REFRESH_RATE);
+		usleep(BT_REFRESH_RATE);
 	}
 	return 0;
 }

@@ -3,10 +3,8 @@
 
 //Using SDL, SDL_image, SDL_ttf, standard IO, math, and strings
 #include "gui.h"
-#include "sensorenv.h"
 
 extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE];
-extern VnDeviceCompositeData sensorData;
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -20,19 +18,16 @@ TTF_Font *gFont = NULL;
 //Rendered texture
 LTexture gTextTextureBT, gTextTextureSens;
 
-//Current displayed the speedometer background, needle &RPM
-LTexture gSpeedometerBackgroundTexture,gNeedleTexture ,gRPMTexture ,gRPMNeedleTexture;
-
-//Artificial Horizon
-LTexture gArtHorzTexture;
+//Current displayed the speedometer background, needle
+LTexture gSpeedometerBackgroundTexture,gNeedleTexture;
 
 int RelativePosition1Object(int screenLength, int objectLentgh, double relativePosition)
 {
-	return ((screenLength - objectLentgh)*relativePosition);
+    return ((screenLength - objectLentgh)*relativePosition);//automatic converting to int :)
 }
 int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,double relativePosition)
 {
-	return ((screenLength - object1Lentgh)*relativePosition) + object1Lentgh/2.0 -object2Length/2.0;
+	return 1;
 }
 bool init()
 {
@@ -118,34 +113,16 @@ bool loadMedia()
 		}
 
 	}
-	if( !gSpeedometerBackgroundTexture.loadFromFile( "/home/odroid/project/resources/step25.gif",gRenderer ) )
+	if( !gSpeedometerBackgroundTexture.loadFromFile( "/home/odroid/project/resources/step22.gif",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fioptics2.png",gRenderer ) )
+	if( !gNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fioptics.png",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
-
-	if( !gRPMTexture.loadFromFile( "/home/odroid/project/resources/lfa-rpm3.gif",gRenderer ) )
-	{
-		printf( "Failed to load rpm backdround image - texture!\n" );
-		success = false;
-	}
-	if( !gRPMNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fiopticsRPM3.png",gRenderer ) )
-	{
-		printf( "Failed to load rpm needle image - texture!\n" );
-		success = false;
-	}
-
-	if( !gArtHorzTexture.loadFromFile( "/home/odroid/project/resources/artHorz.gif",gRenderer ) )
-	{
-		printf( "Failed to load artificial horizon image - texture!\n" );
-		success = false;
-	}
-
 
 	return success;
 }
@@ -190,17 +167,14 @@ void close()
 	//Free loaded images
 	gTextTextureBT.free();
 	gTextTextureSens.free();
-	gSpeedometerBackgroundTexture.free();
-	gNeedleTexture.free();
-	gRPMTexture.free();
-	gRPMNeedleTexture.free();
-	gArtHorzTexture.free();
+	gSpeedometerBackgroundTexture.free();	
+	gNeedleTexture.free();	
 
 	//Free global font
 	TTF_CloseFont( gFont );
 	gFont = NULL;
 
-	//Destroy window
+	//Destroy window	
 	SDL_DestroyRenderer( gRenderer );
 	SDL_DestroyWindow( gWindow );
 	gWindow = NULL;
@@ -215,7 +189,6 @@ void close()
 void* gui_main(void* arg)
 {
 	double degrees =0;
-	double horDeg = 0;
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -229,7 +202,7 @@ void* gui_main(void* arg)
 			printf( "Failed to load media!\n" );
 		}
 		else
-		{
+		{	
 			//Main loop flag
 			bool quit = false;
 
@@ -248,35 +221,18 @@ void* gui_main(void* arg)
 						quit = true;
 					}
 				}
-				degrees +=2;
-				horDeg = (double)sensorData.ypr.pitch;
-				
+				degrees +=1;
 
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0 );	//	background screen color
 				SDL_RenderClear( gRenderer );
-
+				
 
 				//Render current frame
-				gSpeedometerBackgroundTexture.render(
-						RelativePosition1Object(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X),
-						RelativePosition1Object(SCREEN_HEIGHT,gSpeedometerBackgroundTexture.getHeight(),RELATIVE_PLACE_SPEEDOMETER_Y),gRenderer );
-				gRPMTexture.render(
-						RelativePosition1Object(SCREEN_WIDTH,gRPMTexture.getWidth(),RELATIVE_PLACE_RPM_X),
-						RelativePosition1Object(SCREEN_HEIGHT,gRPMTexture.getHeight(),RELATIVE_PLACE_RPM_Y),gRenderer );
-				gNeedleTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),gNeedleTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X),
-						MidPositionRelative(SCREEN_HEIGHT,gSpeedometerBackgroundTexture.getHeight(), gNeedleTexture.getHeight(),RELATIVE_PLACE_SPEEDOMETER_Y) ,
-						gRenderer, NULL, -50.0+degrees, NULL, SDL_FLIP_NONE );
-				gRPMNeedleTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gRPMNeedleTexture.getWidth(),gNeedleTexture.getWidth(),0.953*RELATIVE_PLACE_RPM_X),
-						MidPositionRelative(SCREEN_HEIGHT,gRPMNeedleTexture.getHeight(), gNeedleTexture.getHeight(),1.03*RELATIVE_PLACE_RPM_Y) ,
-						gRenderer, NULL, -30.0+degrees, NULL, SDL_FLIP_NONE );
-				gArtHorzTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gArtHorzTexture.getWidth(),gArtHorzTexture.getWidth(),RELATIVE_PLACE_ARTHORZ_X),
-						MidPositionRelative(SCREEN_HEIGHT,gArtHorzTexture.getHeight(), gArtHorzTexture.getHeight(),RELATIVE_PLACE_ARTHORZ_Y),
-						gRenderer, NULL, 0.0+horDeg, NULL, SDL_FLIP_NONE );
-
+                printf("scree%d     widthovject%d      relativeplace%f",SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X);
+                printf ("%d\n",RelativePosition1Object(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X));
+                gSpeedometerBackgroundTexture.render( RelativePosition1Object(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X), ( SCREEN_HEIGHT - gSpeedometerBackgroundTexture.getHeight() ) /2,gRenderer );
+                gNeedleTexture.render( ( SCREEN_WIDTH - gNeedleTexture.getWidth() ) / 2, ( SCREEN_HEIGHT - gNeedleTexture.getHeight() ) / 2,gRenderer, NULL, -50.0+degrees, NULL, SDL_FLIP_NONE );
 				reloadText();
 				gTextTextureBT.render( ( SCREEN_WIDTH - gTextTextureBT.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureBT.getHeight() ) / 10,gRenderer );
 				gTextTextureSens.render( ( SCREEN_WIDTH - gTextTextureSens.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureSens.getHeight() ) * 9 / 10,gRenderer );
