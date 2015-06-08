@@ -10,25 +10,6 @@
 char gps_buf[BUF_SIZE] = { 0 }, sensors_buf[BUF_SIZE] = { 0 }, bt_buf[BUF_SIZE] = { 0 };
 VnDeviceCompositeData sensorData;
 
-
-static int pretty_print() {
-
-	puts("###################################");
-
-	// print sensor buffer
-	fputs(sensors_buf,stdout);
-
-	// print bt buffer
-	if(bt_buf[0])
-		fputs(bt_buf,stdout);
-	else
-		fputs("Bluetooth buffer empty\n",stdout);
-
-	puts("###################################");
-
-	return 0;
-}
-
 // This is a test comment
 int main()
 {
@@ -37,11 +18,6 @@ int main()
 	pthread_create(&sensors_thread,	NULL,	sensors_main,	NULL);
 	pthread_create(&bt_thread,	NULL,	bt_main,	NULL);
 	pthread_create(&gui_thread,	NULL,	gui_main,	NULL);
-
-	while(0) {
-		pretty_print();
-		usleep(REFRESH_RATE);
-	}
 
 	pthread_join(gui_thread,	NULL);
 	pthread_join(sensors_thread,	NULL);

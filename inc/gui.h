@@ -13,20 +13,28 @@
 #include "common.h"
 
 //Screen dimension constants
-const int SCREEN_WIDTH = 1280;
-const int SCREEN_HEIGHT = 720;
+#define SCREEN_WIDTH 1280
+#define SCREEN_HEIGHT 720
 
 // fraction that will represent the relative place of the speedometer relative in the screen
-const double RELATIVE_PLACE_SPEEDOMETER_X = 2.0/10;// we must use .0 so it will considered as double.
-const double RELATIVE_PLACE_SPEEDOMETER_Y = 6.0/10;
+#define RELATIVE_PLACE_SPEEDOMETER_X -1.0/10 // we must use .0 so it will considered as double.
+#define RELATIVE_PLACE_SPEEDOMETER_Y 10.0/10
 
 // fraction bla bla bla what priel wrote...
-const double RELATIVE_PLACE_RPM_X = 9.0/10;
-const double RELATIVE_PLACE_RPM_Y = 7.0/10;
+#define RELATIVE_PLACE_RPM_X 10.8/10
+#define RELATIVE_PLACE_RPM_Y 10.0/10
 
 //Artificial Horizon
-const double RELATIVE_PLACE_ARTHORZ_X = 5.0/10;
-const double RELATIVE_PLACE_ARTHORZ_Y = 5.0/10;
+#define RELATIVE_PLACE_ARTHORZ_X 5.0/10
+#define RELATIVE_PLACE_ARTHORZ_Y 10.0/10
+
+
+
+//place relative position
+int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,double relativePosition);
+int RelativePosition1Object(int screenLength, int objectLentgh, double relativePosition);
+
+
 
 //Starts up SDL and creates window
 bool init();
@@ -42,6 +50,8 @@ bool reloadText();
 
 //optimize image surface
 SDL_Surface*  loadSurfaceOptimalImg( std::string path );
+
+
 
 void* gui_main(void* arg);
 

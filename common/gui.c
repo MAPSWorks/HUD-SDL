@@ -5,8 +5,15 @@
 #include "gui.h"
 #include "sensorenv.h"
 
+
+
 extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
+
+//here is a dummy x,y point to illustrate the track, the track is poligon of all points.
+int n = 5; // size of the array.
+short Xtrack[5] = {1,100,20,400,70};
+short Ytrack [5] = {2,300,50,500,40};
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -22,6 +29,9 @@ LTexture gTextTextureBT, gTextTextureSens;
 
 //Current displayed the speedometer background, needle &RPM
 LTexture gSpeedometerBackgroundTexture,gNeedleTexture ,gRPMTexture ,gRPMNeedleTexture;
+
+//for the track, use polygon.
+LTexture gPolygon;
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -116,7 +126,6 @@ bool loadMedia()
 			printf( "Failed to render text texture!\n" );
 			success = false;
 		}
-
 	}
 	if( !gSpeedometerBackgroundTexture.loadFromFile( "/home/odroid/project/resources/step25.gif",gRenderer ) )
 	{
@@ -250,7 +259,7 @@ void* gui_main(void* arg)
 				}
 				degrees +=2;
 				horDeg = (double)sensorData.ypr.pitch;
-				
+
 
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0 );	//	background screen color
@@ -259,28 +268,34 @@ void* gui_main(void* arg)
 
 				//Render current frame
 				gSpeedometerBackgroundTexture.render(
-						RelativePosition1Object(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X),
-						RelativePosition1Object(SCREEN_HEIGHT,gSpeedometerBackgroundTexture.getHeight(),RELATIVE_PLACE_SPEEDOMETER_Y),gRenderer );
+						RelativePosition1Object(SCREEN_WIDTH,	gSpeedometerBackgroundTexture.getWidth(),	RELATIVE_PLACE_SPEEDOMETER_X),
+						RelativePosition1Object(SCREEN_HEIGHT,	gSpeedometerBackgroundTexture.getHeight(),	RELATIVE_PLACE_SPEEDOMETER_Y),
+						gRenderer );
 				gRPMTexture.render(
-						RelativePosition1Object(SCREEN_WIDTH,gRPMTexture.getWidth(),RELATIVE_PLACE_RPM_X),
-						RelativePosition1Object(SCREEN_HEIGHT,gRPMTexture.getHeight(),RELATIVE_PLACE_RPM_Y),gRenderer );
+						RelativePosition1Object(SCREEN_WIDTH,	gRPMTexture.getWidth(),		RELATIVE_PLACE_RPM_X),
+						RelativePosition1Object(SCREEN_HEIGHT,	gRPMTexture.getHeight(),	RELATIVE_PLACE_RPM_Y),
+						gRenderer );
 				gNeedleTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gSpeedometerBackgroundTexture.getWidth(),gNeedleTexture.getWidth(),RELATIVE_PLACE_SPEEDOMETER_X),
-						MidPositionRelative(SCREEN_HEIGHT,gSpeedometerBackgroundTexture.getHeight(), gNeedleTexture.getHeight(),RELATIVE_PLACE_SPEEDOMETER_Y) ,
+						MidPositionRelative(SCREEN_WIDTH,	gSpeedometerBackgroundTexture.getWidth(),	gNeedleTexture.getWidth(),	RELATIVE_PLACE_SPEEDOMETER_X),
+						MidPositionRelative(SCREEN_HEIGHT,	gSpeedometerBackgroundTexture.getHeight(), 	gNeedleTexture.getHeight(),	RELATIVE_PLACE_SPEEDOMETER_Y),
 						gRenderer, NULL, -50.0+degrees, NULL, SDL_FLIP_NONE );
 				gRPMNeedleTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gRPMNeedleTexture.getWidth(),gNeedleTexture.getWidth(),0.953*RELATIVE_PLACE_RPM_X),
-						MidPositionRelative(SCREEN_HEIGHT,gRPMNeedleTexture.getHeight(), gNeedleTexture.getHeight(),1.03*RELATIVE_PLACE_RPM_Y) ,
+						MidPositionRelative(SCREEN_WIDTH,	gRPMTexture.getWidth(),		gRPMNeedleTexture.getWidth(),	RELATIVE_PLACE_RPM_X),
+						MidPositionRelative(SCREEN_HEIGHT,	gRPMTexture.getHeight(),	gRPMNeedleTexture.getHeight(), 	RELATIVE_PLACE_RPM_Y) ,
 						gRenderer, NULL, -30.0+degrees, NULL, SDL_FLIP_NONE );
 				gArtHorzTexture.render(
-						MidPositionRelative(SCREEN_WIDTH,gArtHorzTexture.getWidth(),gArtHorzTexture.getWidth(),RELATIVE_PLACE_ARTHORZ_X),
-						MidPositionRelative(SCREEN_HEIGHT,gArtHorzTexture.getHeight(), gArtHorzTexture.getHeight(),RELATIVE_PLACE_ARTHORZ_Y),
+						MidPositionRelative(SCREEN_WIDTH,	gArtHorzTexture.getWidth(),	gArtHorzTexture.getWidth(),	RELATIVE_PLACE_ARTHORZ_X),
+						MidPositionRelative(SCREEN_HEIGHT,	gArtHorzTexture.getHeight(), 	gArtHorzTexture.getHeight(),	RELATIVE_PLACE_ARTHORZ_Y),
 						gRenderer, NULL, 0.0+horDeg, NULL, SDL_FLIP_NONE );
 
 				reloadText();
 				gTextTextureBT.render( ( SCREEN_WIDTH - gTextTextureBT.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureBT.getHeight() ) / 10,gRenderer );
 				gTextTextureSens.render( ( SCREEN_WIDTH - gTextTextureSens.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureSens.getHeight() ) * 9 / 10,gRenderer );
 
+                //load the polygon:
+                  if (!polygonRGBA(gRenderer,Xtrack, Ytrack,5,255, 255, 255, 155))
+                    printf("failed to render the polygon");
+                printf("%d",Xtrack[2]);
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}
@@ -292,3 +307,4 @@ void* gui_main(void* arg)
 
 	return 0;
 }
+

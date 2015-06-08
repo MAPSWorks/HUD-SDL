@@ -13,6 +13,7 @@ PROJBASE	= .
 COMMON		= $(PROJBASE)/common
 SRCS		= $(wildcard $(COMMON)/*.c)
 MISC		= $(PROJBASE)/misc
+INCDIR		= $(PROJBASE)/inc
 
 # objects
 OBJS		= $(SRCS:.c=.o)
@@ -29,7 +30,7 @@ O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL_BIN) $(BT_CL)
 
 default: project
 
-%.o: %.c
+%.o: %.c $(INCDIR)/*.h
 	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
 
 project: $(MAIN) $(OBJS)
