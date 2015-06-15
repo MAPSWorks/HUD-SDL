@@ -1,7 +1,7 @@
 #include "sensorenv.h"
 #include "common.h"
 
-extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
 
 /* Change the connection settings to your configuration. */
@@ -32,7 +32,14 @@ void* sensors_main(void* arg) {
 			1.23,
 			4.56,
 			7.89);
-
+        sprintf(velocity_buf,
+			"YPR.Yaw: %+#7.2f, "
+			"YPR.Pitch: %+#7.2f, "
+			"YPR.Roll: %+#7.2f",
+			1.23,
+			4.56,
+			7.89);
+        printf("BIBA YA MANYAK!");
 		return 0;
 	}
 
@@ -44,9 +51,9 @@ void* sensors_main(void* arg) {
 			"GPS.Lat: %+#7.2f, "
 			"GPS.Lon: %+#7.2f, "
 			"GPS.Alt: %+#7.2f\n",
-			sensorData.gpsPosLla.c0,
-			sensorData.gpsPosLla.c1,
-			sensorData.gpsPosLla.c2);
+			sensorData.latitudeLongitudeAltitude.c0,
+			sensorData.latitudeLongitudeAltitude.c1,
+			sensorData.latitudeLongitudeAltitude.c2);
 
 		sprintf(sensors_buf,
 			"YPR.Yaw: %+#7.2f, "
@@ -55,6 +62,20 @@ void* sensors_main(void* arg) {
 			sensorData.ypr.yaw,
 			sensorData.ypr.pitch,
 			sensorData.ypr.roll);
+
+        sprintf(velocity_buf,
+            "VelocityX: %+#7.2f, "
+			"VelocityY: %+#7.2f, "
+			"VelocityZ: %+#7.2f",
+			sensorData.velocity.c0,
+			sensorData.velocity.c1,
+			sensorData.velocity.c2);
+
+        /*sprintf(acceleration_buf,
+            "VelocityX: %+#7.2f, "
+			"VelocityY: %+#7.2f, "
+			"VelocityZ: %+#7.2f",
+			sensorData.acceleration);*/
 
 		//usleep(SENS_REFRESH_RATE);
 	}
@@ -67,11 +88,11 @@ void* sensors_main(void* arg) {
 	return 0;
 }
 
-int initAsyncSensors(Vn200* vn200) 
+int initAsyncSensors(Vn200* vn200)
 {
 	VN_ERROR_CODE errorCode;
 	errorCode = vn200_connect(vn200,COM_PORT,BAUD_RATE);
-	
+
 	//the struct VnDeviceCompositeData in vndevice.h contain all posible variables.
 
 	/* Make sure the user has permission to use the COM port. */
@@ -85,7 +106,7 @@ int initAsyncSensors(Vn200* vn200)
 		printf("Error encountered when trying to connect to the sensor.\n");
 		return -1;
 	}
-	
+
 	/* Configure the VN-200 to output asynchronous data. */
 	errorCode = vn200_setAsynchronousDataOutputType(vn200,VNASYNC_VNINS,true);
 
@@ -94,4 +115,8 @@ int initAsyncSensors(Vn200* vn200)
 	sleep(1);
 	return 1;
 }
+
+
+
+
 

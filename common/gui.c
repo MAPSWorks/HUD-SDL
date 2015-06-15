@@ -4,16 +4,20 @@
 //Using SDL, SDL_image, SDL_ttf, standard IO, math, and strings
 #include "gui.h"
 #include "sensorenv.h"
+#include <time.h>
 
 
 
-extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE];
+extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
 
 //here is a dummy x,y point to illustrate the track, the track is poligon of all points.
-int n = 5; // size of the array.
-short Xtrack[5] = {1,100,20,400,70};
-short Ytrack [5] = {2,300,50,500,40};
+int n = 3; // size of the array.
+short Xtrack[3] = {200 ,300 ,400};
+short Ytrack [3] = {200, 400 ,200};
+
+short Xtrack_Updated[3] = {0};
+short Ytrack_Updated[3] = {0};
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -25,7 +29,7 @@ SDL_Renderer* gRenderer = NULL;
 TTF_Font *gFont = NULL;
 
 //Rendered texture
-LTexture gTextTextureBT, gTextTextureSens;
+LTexture gTextTextureBT, gTextTextureSens , gTextTextureGPS;
 
 //Current displayed the speedometer background, needle &RPM
 LTexture gSpeedometerBackgroundTexture,gNeedleTexture ,gRPMTexture ,gRPMNeedleTexture;
@@ -179,6 +183,21 @@ bool reloadText()
 		}
 	}
 
+	//GPS
+	if(!gps_buf[0]) {
+		if( !gTextTextureGPS.loadFromRenderedText( "Sensors buffer empty", textColor, gFont,gRenderer) ) {
+			printf( "Failed to render text texture!\n" );
+			success = false;
+		}
+	} else {
+		if( !gTextTextureGPS.loadFromRenderedText( gps_buf, textColor,gFont,gRenderer ) ) {
+			printf( "Failed to render GPS text texture!\n" );
+			success = false;
+		}
+	}
+
+
+
 	if(!bt_buf[0]) {
 		if( !gTextTextureBT.loadFromRenderedText( "Bluetooth buffer empty", textColor,gFont,gRenderer ) ) {
 			printf( "Failed to render text texture!\n" );
@@ -199,6 +218,7 @@ void close()
 	//Free loaded images
 	gTextTextureBT.free();
 	gTextTextureSens.free();
+	gTextTextureGPS.free();
 	gSpeedometerBackgroundTexture.free();
 	gNeedleTexture.free();
 	gRPMTexture.free();
@@ -225,6 +245,9 @@ void* gui_main(void* arg)
 {
 	double degrees =0;
 	double horDeg = 0;
+	double yawDeg = 0;
+
+	time_t mytime = time(NULL);
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -257,8 +280,13 @@ void* gui_main(void* arg)
 						quit = true;
 					}
 				}
-				degrees +=2;
-				horDeg = (double)sensorData.ypr.pitch;
+				degrees +=1;
+				horDeg = (double)sensorData.ypr.roll;
+				yawDeg = (double)sensorData.ypr.yaw;
+				
+				printf("refresh rate is: %lf\n",(1/(time(NULL) - mytime)));
+				mytime = time(NULL);
+
 
 
 				//Clear screen
@@ -291,11 +319,13 @@ void* gui_main(void* arg)
 				reloadText();
 				gTextTextureBT.render( ( SCREEN_WIDTH - gTextTextureBT.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureBT.getHeight() ) / 10,gRenderer );
 				gTextTextureSens.render( ( SCREEN_WIDTH - gTextTextureSens.getWidth() ) / 2, ( SCREEN_HEIGHT - gTextTextureSens.getHeight() ) * 9 / 10,gRenderer );
+				gTextTextureGPS.render( ( SCREEN_WIDTH - gTextTextureSens.getWidth() ) * 7 / 8, ( SCREEN_HEIGHT - gTextTextureGPS.getHeight() ) * 3 / 10,gRenderer );
 
-                //load the polygon:
-                  if (!polygonRGBA(gRenderer,Xtrack, Ytrack,5,255, 255, 255, 155))
-                    printf("failed to render the polygon");
-                printf("%d",Xtrack[2]);
+				//load the polygon:
+				//Try to rotate according to Yaw
+				//rotatePts(Xtrack, Ytrack, n, 2, 300,300 ,Xtrack_Updated ,Ytrack_Updated);
+				//if (!polygonRGBA(gRenderer,Xtrack, Ytrack,n,255, 255, 255, 155))
+				//	printf("failed to render the polygon");
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}

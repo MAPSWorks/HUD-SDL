@@ -51,6 +51,12 @@ bool reloadText();
 //optimize image surface
 SDL_Surface*  loadSurfaceOptimalImg( std::string path );
 
+//Addditional functions for geometric flow control
+void rotatePts(short x[], short y[], int numPTS, double angle_deg , short origin_x, short origin_y,short x_new[], short y_new[]);
+void shitPTS(short x[], short y[], int numPTS, short delX, short delY);
+int normPts(double GPS_PTS_X[] ,double GPS_PTS_Y[] ,int numPTS, short frame[] , short MAP_PTS_X[] , short MAP_PTS_Y[]);
+int frameXY(double GPS_PTS_X[] ,double GPS_PTS_Y[] ,int numPTS ,double GPS_frame[]);
+int gps2linearDist(double lat, double lon ,short XYcoordiates[]);
 
 
 void* gui_main(void* arg);
