@@ -5,20 +5,18 @@
 #include "gui.h"
 #include "sensorenv.h"
 #include <time.h>
-
-
+#include <iostream>
+#include <vector>
 
 extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
 
-//here is a dummy x,y point to illustrate the track, the track is poligon of all points.
-int n = 3; // size of the array.
-short Xtrack[3] = {200 ,300 ,400};
-short Ytrack [3] = {200, 400 ,200};
+std::vector<Point> pts;
+std::vector<Point> Updated_pts;
 
-short Xtrack_Updated[3] = {0};
-short Ytrack_Updated[3] = {0};
 
+//short Xtrack_Updated[18] =  {0};
+//short Ytrack_Updated [18] = {0};
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
@@ -61,6 +59,7 @@ bool init()
 	}
 	else
 	{
+		
 		//Set texture filtering to linear
 		if( !SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "1" ) )
 		{
@@ -131,29 +130,29 @@ bool loadMedia()
 			success = false;
 		}
 	}
-	if( !gSpeedometerBackgroundTexture.loadFromFile( "/home/odroid/project/resources/step25.gif",gRenderer ) )
+	if( !gSpeedometerBackgroundTexture.loadFromFile( "./resources/step25.gif",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fioptics2.png",gRenderer ) )
+	if( !gNeedleTexture.loadFromFile( "./resources/needle-fioptics2.png",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
 
-	if( !gRPMTexture.loadFromFile( "/home/odroid/project/resources/lfa-rpm3.gif",gRenderer ) )
+	if( !gRPMTexture.loadFromFile( "./resources/lfa-rpm3.gif",gRenderer ) )
 	{
 		printf( "Failed to load rpm backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gRPMNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fiopticsRPM3.png",gRenderer ) )
+	if( !gRPMNeedleTexture.loadFromFile( "./resources/needle-fiopticsRPM3.png",gRenderer ) )
 	{
 		printf( "Failed to load rpm needle image - texture!\n" );
 		success = false;
 	}
 
-	if( !gArtHorzTexture.loadFromFile( "/home/odroid/project/resources/artHorz.gif",gRenderer ) )
+	if( !gArtHorzTexture.loadFromFile( "./resources/artHorz.gif",gRenderer ) )
 	{
 		printf( "Failed to load artificial horizon image - texture!\n" );
 		success = false;
@@ -243,11 +242,15 @@ void close()
 
 void* gui_main(void* arg)
 {
-	double degrees =0;
+	short degrees = 0;
 	double horDeg = 0;
-	double yawDeg = 0;
+	pts.push_back(Point(200,200));
+	pts.push_back(Point(300,400));
+	pts.push_back(Point(400,200));
+	uint ptsIndex = 0;
 
-	time_t mytime = time(NULL);
+	//std::vector<Point> pts_Updated;
+
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -280,12 +283,9 @@ void* gui_main(void* arg)
 						quit = true;
 					}
 				}
-				degrees +=1;
+				degrees = (1 + degrees)%360;
 				horDeg = (double)sensorData.ypr.roll;
-				yawDeg = (double)sensorData.ypr.yaw;
 				
-				printf("refresh rate is: %lf\n",(1/(time(NULL) - mytime)));
-				mytime = time(NULL);
 
 
 
@@ -323,9 +323,19 @@ void* gui_main(void* arg)
 
 				//load the polygon:
 				//Try to rotate according to Yaw
-				//rotatePts(Xtrack, Ytrack, n, 2, 300,300 ,Xtrack_Updated ,Ytrack_Updated);
-				//if (!polygonRGBA(gRenderer,Xtrack, Ytrack,n,255, 255, 255, 155))
-				//	printf("failed to render the polygon");
+				//rotatePts(Xtrack, Ytrack, n, 0.25 , 200,200 ,Xtrack_Updated ,Ytrack_Updated);
+				//shiftPTS(Xtrack,Ytrack,n,Xtrack[(degrees/10+1)%n]-Xtrack[degrees/10%n],Ytrack[(degrees/10+1)%n]-Ytrack[degrees/10%n],Xtrack_Updated, 	Ytrack_Updated);
+				
+				
+				//if (polygonRGBA(gRenderer,Xtrack_Updated, Ytrack_Updated,n,255, 255, 255, 155))
+					//printf("Priel Ya Manyak!");
+
+				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
+				{				
+					lineRGBA(gRenderer ,pts[ptsIndex-1].X ,pts[ptsIndex-1].Y ,pts[ptsIndex % pts.size()].X ,pts[ptsIndex % pts.size()].Y ,100,100,255,155);
+					//ptsUpdated.push_back(pts[ptsIndex]);	
+				}
+				
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}
