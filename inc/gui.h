@@ -6,7 +6,6 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL2_gfxPrimitives.h>
-#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <cmath>

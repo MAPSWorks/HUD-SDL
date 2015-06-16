@@ -7,16 +7,18 @@
 #include <time.h>
 #include <iostream>
 #include <vector>
+#include "common.h"
+
+
 
 extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
+extern bool globQuitSig;
 
 std::vector<Point> pts;
 std::vector<Point> Updated_pts;
 
 
-//short Xtrack_Updated[18] =  {0};
-//short Ytrack_Updated [18] = {0};
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
 
@@ -130,29 +132,29 @@ bool loadMedia()
 			success = false;
 		}
 	}
-	if( !gSpeedometerBackgroundTexture.loadFromFile( "./resources/step25.gif",gRenderer ) )
+	if( !gSpeedometerBackgroundTexture.loadFromFile( PROJ_HOME "/resources/step25.gif",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gNeedleTexture.loadFromFile( "./resources/needle-fioptics2.png",gRenderer ) )
+	if( !gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
 
-	if( !gRPMTexture.loadFromFile( "./resources/lfa-rpm3.gif",gRenderer ) )
+	if( !gRPMTexture.loadFromFile( PROJ_HOME "/resources/lfa-rpm3.gif",gRenderer ) )
 	{
 		printf( "Failed to load rpm backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gRPMNeedleTexture.loadFromFile( "./resources/needle-fiopticsRPM3.png",gRenderer ) )
+	if( !gRPMNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fiopticsRPM3.png",gRenderer ) )
 	{
 		printf( "Failed to load rpm needle image - texture!\n" );
 		success = false;
 	}
 
-	if( !gArtHorzTexture.loadFromFile( "./resources/artHorz.gif",gRenderer ) )
+	if( !gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.gif",gRenderer ) )
 	{
 		printf( "Failed to load artificial horizon image - texture!\n" );
 		success = false;
@@ -244,6 +246,10 @@ void* gui_main(void* arg)
 {
 	short degrees = 0;
 	double horDeg = 0;
+	//double yawDeg = 0;
+	int numFrames = 0;
+	Uint32 startTime = SDL_GetTicks();
+ 	float fps = 0;
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(300,400));
 	pts.push_back(Point(400,200));
@@ -265,25 +271,25 @@ void* gui_main(void* arg)
 		}
 		else
 		{
-			//Main loop flag
-			bool quit = false;
-
 			//Event handler
 			SDL_Event e;
 
 			//While application is running
-			while( !quit )
+			while( !globQuitSig )
 			{
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
-					//User requests quit
+					//User requests globQuitSig
 					if( e.type == SDL_QUIT )
 					{
-						quit = true;
+						globQuitSig = true;
 					}
 				}
-				degrees = (1 + degrees)%360;
+				numFrames++;
+				degrees++;
+				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
+				//printf("FPS: %lf\n", fps);
 				horDeg = (double)sensorData.ypr.roll;
 				
 

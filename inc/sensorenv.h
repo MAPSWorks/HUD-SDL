@@ -5,6 +5,9 @@
 #include <unistd.h>
 #include "vectornav.h"
 
+#define VN_CONNECTION_POLL_RATE 5
+
+
 int initAsyncSensors(Vn200* vn200);
 void* sensors_main(void* arg);
 
