@@ -277,14 +277,13 @@ void* gui_main(void* arg)
 					//User requests globQuitSig
 					if( e.type == SDL_QUIT )
 					{
-						printf("quitting\n");
 						globQuitSig = true;
 					}
 				}
 				numFrames++;
 				degrees++;
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
-				printf("FPS: %lf\n", fps);
+				//printf("FPS: %lf\n", fps);
 				horDeg = (double)sensorData.ypr.roll;
 				//yawDeg = (double)sensorData.ypr.yaw;
 
