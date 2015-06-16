@@ -15,10 +15,12 @@
 #include "common.h"
 
 extern char bt_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern bool globQuitSig;
 
 // BT global variables
 bool connected;
 int client;
+int s;
 char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
 
 void* bt_main(void* arg) {
@@ -27,7 +29,7 @@ void* bt_main(void* arg) {
 }
 
 void* send_messages(void* arg) {
-	while(connected) {
+	while(connected&&!globQuitSig) {
 		strcpy(wr_buf,gps_buf);
 		if( write(client, wr_buf, BUF_SIZE) < 0 ) perror("uh oh");
 		usleep(BT_REFRESH_RATE);
@@ -36,7 +38,7 @@ void* send_messages(void* arg) {
 }
 
 void* recieve_messages(void* arg) {
-	while(connected) {
+	while(connected&&!globQuitSig) {
 		int bytes_read = read(client, rd_buf, BUF_SIZE);
 		if(bytes_read == -1) {
 			sprintf(bt_buf, "Client disconnected");
@@ -50,9 +52,16 @@ void* recieve_messages(void* arg) {
 	return 0;
 }
 
+//void* pollQuitSig(void* arg) {
+//	while(!connected&&!globQuitSig);
+//	int d = dup(s);
+//	d = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
+//	status = connect(d, (struct sockaddr *)&addr, sizeof(addr));
+//	return NULL;
+//}
+
 int bt_server() {
 	struct sockaddr_rc loc_addr = { 0 }, rem_addr = { 0 };
-	int s;
 	socklen_t opt = sizeof(rem_addr);
 
 	printf("Initializing bt_server\n");
@@ -67,14 +76,22 @@ int bt_server() {
 	loc_addr.rc_channel = (uint8_t) 22;	//	changed to channel 22
 	bind(s, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 
-	while(1) {
+	while(!globQuitSig) {
 		// put socket into listening mode
 		listen(s, 1);
 
+		//pthread_t pollQuitSig_th;
 		// accept one connection
 		sprintf(bt_buf, "Waiting for connection");
+		//pthread_create(&pollQuitSig_th,	NULL,	pollQuitSig,	NULL);
+
+		//printf("before accept\n");
 		client = accept(s, (struct sockaddr *)&rem_addr, &opt);
+		//printf("after accept\n");
 		connected = 1;
+
+		//pthread_join(pollQuitSig_th,	NULL);
+		//if(globQuitSig) return 0;	//	there is a quit event
 
 		ba2str( &rem_addr.rc_bdaddr, wr_buf );
 		sprintf(bt_buf, "accepted connection from %s", wr_buf);

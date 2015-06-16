@@ -3,8 +3,8 @@ CC		= g++
 CFLAGS		= -Wall -pthread -g -std=c++11
 
 # common
-LIBS		= -lm -lbluetooth -lrt -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx -lSDL2_mixer
-INCS		= -I$(PROJBASE)/inc -I/usr/include/SDL2
+LIBS		= -lm -lbluetooth -lrt -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx 
+INCS		= -I$(PROJBASE)/inc -I/usr/local/include/SDL2
 
 # project
 PROJBASE	= .

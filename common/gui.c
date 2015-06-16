@@ -4,12 +4,13 @@
 //Using SDL, SDL_image, SDL_ttf, standard IO, math, and strings
 #include "gui.h"
 #include "sensorenv.h"
-#include <time.h>
+#include "common.h"
 
 
 
 extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
 extern VnDeviceCompositeData sensorData;
+extern bool globQuitSig;
 
 //here is a dummy x,y point to illustrate the track, the track is poligon of all points.
 int n = 3; // size of the array.
@@ -131,29 +132,29 @@ bool loadMedia()
 			success = false;
 		}
 	}
-	if( !gSpeedometerBackgroundTexture.loadFromFile( "/home/odroid/project/resources/step25.gif",gRenderer ) )
+	if( !gSpeedometerBackgroundTexture.loadFromFile( PROJ_HOME "/resources/step25.gif",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fioptics2.png",gRenderer ) )
+	if( !gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png",gRenderer ) )
 	{
 		printf( "Failed to load speedometer backdround image - texture!\n" );
 		success = false;
 	}
 
-	if( !gRPMTexture.loadFromFile( "/home/odroid/project/resources/lfa-rpm3.gif",gRenderer ) )
+	if( !gRPMTexture.loadFromFile( PROJ_HOME "/resources/lfa-rpm3.gif",gRenderer ) )
 	{
 		printf( "Failed to load rpm backdround image - texture!\n" );
 		success = false;
 	}
-	if( !gRPMNeedleTexture.loadFromFile( "/home/odroid/project/resources/needle-fiopticsRPM3.png",gRenderer ) )
+	if( !gRPMNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fiopticsRPM3.png",gRenderer ) )
 	{
 		printf( "Failed to load rpm needle image - texture!\n" );
 		success = false;
 	}
 
-	if( !gArtHorzTexture.loadFromFile( "/home/odroid/project/resources/artHorz.gif",gRenderer ) )
+	if( !gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.gif",gRenderer ) )
 	{
 		printf( "Failed to load artificial horizon image - texture!\n" );
 		success = false;
@@ -245,9 +246,11 @@ void* gui_main(void* arg)
 {
 	double degrees =0;
 	double horDeg = 0;
-	double yawDeg = 0;
+	//double yawDeg = 0;
+	int numFrames = 0;
+	Uint32 startTime = SDL_GetTicks();
+ 	float fps = 0;
 
-	time_t mytime = time(NULL);
 	//Start up SDL and create window
 	if( !init() )
 	{
@@ -262,30 +265,29 @@ void* gui_main(void* arg)
 		}
 		else
 		{
-			//Main loop flag
-			bool quit = false;
-
 			//Event handler
 			SDL_Event e;
 
 			//While application is running
-			while( !quit )
+			while( !globQuitSig )
 			{
 				//Handle events on queue
 				while( SDL_PollEvent( &e ) != 0 )
 				{
-					//User requests quit
+					//User requests globQuitSig
 					if( e.type == SDL_QUIT )
 					{
-						quit = true;
+						printf("quitting\n");
+						globQuitSig = true;
 					}
 				}
-				degrees +=1;
+				numFrames++;
+				degrees++;
+				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
+				printf("FPS: %lf\n", fps);
 				horDeg = (double)sensorData.ypr.roll;
-				yawDeg = (double)sensorData.ypr.yaw;
-				
-				printf("refresh rate is: %lf\n",(1/(time(NULL) - mytime)));
-				mytime = time(NULL);
+				//yawDeg = (double)sensorData.ypr.yaw;
+
 
 
 
@@ -323,9 +325,9 @@ void* gui_main(void* arg)
 
 				//load the polygon:
 				//Try to rotate according to Yaw
-				//rotatePts(Xtrack, Ytrack, n, 2, 300,300 ,Xtrack_Updated ,Ytrack_Updated);
-				//if (!polygonRGBA(gRenderer,Xtrack, Ytrack,n,255, 255, 255, 155))
-				//	printf("failed to render the polygon");
+				rotatePts(Xtrack, Ytrack, n, degrees, 300,300 ,Xtrack_Updated ,Ytrack_Updated);
+				if (polygonRGBA(gRenderer,Xtrack_Updated ,Ytrack_Updated,n,255, 255, 255, 155))
+					printf("Priel ya Manyak!");
 				//Update screen
 				SDL_RenderPresent( gRenderer );
 			}

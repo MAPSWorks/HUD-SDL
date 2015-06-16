@@ -6,7 +6,6 @@
 #include <SDL_image.h>
 #include <SDL_ttf.h>
 #include <SDL2_gfxPrimitives.h>
-#include <SDL_mixer.h>
 #include <stdio.h>
 #include <string>
 #include <cmath>
@@ -27,7 +26,6 @@
 //Artificial Horizon
 #define RELATIVE_PLACE_ARTHORZ_X 5.0/10
 #define RELATIVE_PLACE_ARTHORZ_Y 10.0/10
-
 
 
 //place relative position
