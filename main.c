@@ -6,6 +6,7 @@
 #include "sensorenv.h"
 #include "bluetooth_top.h"
 #include <pthread.h>
+#include <signal.h>
 
 char gps_buf[BUF_SIZE] = { 0 }, sensors_buf[BUF_SIZE] = { 0 }, bt_buf[BUF_SIZE] = { 0 } ,velocity_buf[BUF_SIZE] = { 0 };
 bool globQuitSig = false;
