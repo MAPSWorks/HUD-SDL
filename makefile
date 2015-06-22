@@ -1,6 +1,6 @@
 # basic
 CC		= g++
-CFLAGS		= -Wall -pthread -g -std=c++11
+CFLAGS		= -Wall -g -std=c++11
 
 # common
 LIBS		= -lm -lbluetooth -lrt -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx 
