@@ -5,7 +5,10 @@
 #include <unistd.h>
 #include "vectornav.h"
 
-#define VN_CONNECTION_POLL_RATE 5
+#define VN_CONNECTION_POLL_RATE	1	// in seconds
+#define VN_GET_DATA_ASYNC_RATE 	30000	// in microseconds
+
+#define VERIFY_CONN_FIX
 
 
 int initAsyncSensors(Vn200* vn200);

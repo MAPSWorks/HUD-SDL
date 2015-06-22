@@ -17,17 +17,39 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-// fraction that will represent the relative place of the speedometer relative in the screen
-#define RELATIVE_PLACE_SPEEDOMETER_X -1.0/10 // we must use .0 so it will considered as double.
-#define RELATIVE_PLACE_SPEEDOMETER_Y 10.0/10
+#define MAX_RPM         12000
+#define MAX_VELOCITY    180
+#define MAX_DEGREE      130
+#define MAX_GEAR        5
+#define DEGREES_OFFSET  90
 
-// fraction bla bla bla what priel wrote...
-#define RELATIVE_PLACE_RPM_X 10.8/10
-#define RELATIVE_PLACE_RPM_Y 10.0/10
+// for the wassach Biba is gay :)
+#define VELOCITY_STEP   2
+#define RPM_STEP        50
+#define GEAR_STEP       1
+#define FONT_7_SIZE     150
+
+#define RELATIVE_PLACE_VELOCITY_G_X 5.0/10
+#define RELATIVE_PLACE_VELOCITY_G_Y 8.5/10
+
+#define RELATIVE_PLACE_RPM_X 5.1/10
+#define RELATIVE_PLACE_RPM_Y 7.7/10
+
+// fraction that will represent the relative place of the speedometer relative in the screen
+#define RELATIVE_PLACE_SPEEDOMETER_X 6.0/10 // we must use .0 so it will considered as double.
+#define RELATIVE_PLACE_SPEEDOMETER_Y 9.5/10
 
 //Artificial Horizon
-#define RELATIVE_PLACE_ARTHORZ_X 5.0/10
-#define RELATIVE_PLACE_ARTHORZ_Y 10.0/10
+#define RELATIVE_PLACE_ARTHORZ_X 2.0/10
+#define RELATIVE_PLACE_ARTHORZ_Y 5.0/10
+
+//velocity 7 seg font place
+#define RELATIVE_PLACE_FONT_VELOCITY_X 5.7/10
+#define RELATIVE_PLACE_FONT_VELOCITY_Y 8.0/10
+
+//Gear 7 segment font place
+#define RELATIVE_PLACE_FONT_GEAR_X 9.0/10
+#define RELATIVE_PLACE_FONT_GEAR_Y 9.0/10
 
 //place relative position
 int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,double relativePosition);
