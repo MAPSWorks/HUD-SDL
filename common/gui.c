@@ -256,8 +256,10 @@ void* gui_main(void* arg)
 	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
+#ifdef TRACK_FPS
 	Uint32 startTime = SDL_GetTicks();
  	float fps = 0;
+<<<<<<< HEAD
     int velocityInt = 0;
     int gearInt = 0;
     int RPMint = 0;
@@ -265,6 +267,9 @@ void* gui_main(void* arg)
     std::string strVelocity = std::to_string(velocityInt);
     std::string strGear = std::to_string(gearInt);
 
+=======
+#endif
+>>>>>>> f988bd4d397d7ad9f7d8e2b026ae619d06e25b33
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(300,400));
 	pts.push_back(Point(400,200));
@@ -309,6 +314,7 @@ void* gui_main(void* arg)
 
                 // for demo only. to be connected to the actual values
 				numFrames++;
+<<<<<<< HEAD
 				velocityInt += VELOCITY_STEP;
 				RPMint      += RPM_STEP;
 				gearInt     += GEAR_STEP;
@@ -323,8 +329,13 @@ void* gui_main(void* arg)
 				velocity = velocityInt;
                 gear = gearInt;
 
+=======
+				degrees++;
+#ifdef TRACK_FPS
+>>>>>>> f988bd4d397d7ad9f7d8e2b026ae619d06e25b33
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
+#endif
 				horDeg = (double)sensorData.ypr.roll;
 
 
