@@ -245,7 +245,7 @@ void* gui_main(void* arg)
 {
 	short degrees = 0;
 	double horDeg = 0;
-	vector<short> velocity;
+	std::vector<short> velocity;
 	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
