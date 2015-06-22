@@ -29,3 +29,6 @@
 
 # .swp files
 *.swp
+
+# codeblocks project files
+*.cbp
