@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include "sensorenv.h"
 #include "vn200.h"
 #include "vn_errorCodes.h"
 
@@ -377,7 +378,11 @@ bool vn200_verifyConnectivity(
 	if (strncmp(vndevice_getResponseBuffer(&vn200->vndevice), responseMatch2, strlen(responseMatch2)) == 0)
 		return true;
 
+#ifdef VERIFY_CONN_FIX
+	return true;
+#else
 	return false;
+#endif
 }
 
 VN_ERROR_CODE vn200_getGpsConfiguration_preFirmwareVersion1d0(

@@ -249,8 +249,10 @@ void* gui_main(void* arg)
 	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
+#ifdef TRACK_FPS
 	Uint32 startTime = SDL_GetTicks();
  	float fps = 0;
+#endif
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(300,400));
 	pts.push_back(Point(400,200));
@@ -294,8 +296,10 @@ void* gui_main(void* arg)
 				}
 				numFrames++;
 				degrees++;
+#ifdef TRACK_FPS
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
+#endif
 				horDeg = (double)sensorData.ypr.roll;
 
 

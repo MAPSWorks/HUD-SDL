@@ -6,28 +6,19 @@ extern VnDeviceCompositeData sensorData;
 extern bool globQuitSig;
 
 /* Change the connection settings to your configuration. */
-const char* const COM_PORT = "//dev//ttyUSB0";
+const char* const COM_PORT = "/dev/ttyUSB0";
 const int BAUD_RATE = 115200;
 
 void* sensors_main(void* arg) {
 	Vn200 vn200;
-	bool connected = true;
 
 	while (!globQuitSig) {
-		//initialize the sensor, return if not succeeded.
-		if(initAsyncSensors(&vn200) == -1) {
-			if(connected) {
-				sprintf(gps_buf, 	"TEST");
-				sprintf(sensors_buf, 	"Sensors unreachable");
-				sprintf(velocity_buf, 	"Sensors unreachable");
-			}
-			connected = false;
+		while(initAsyncSensors(&vn200) == -1)	//	in case we failed sleep and try to reconnect
 			sleep(VN_CONNECTION_POLL_RATE);
-			continue;
-		}
 		printf("Sensornav connected succesfully\n");
-		connected = true;
-		while (vn200_getCurrentAsyncData(&vn200, &sensorData) != VNERR_NOT_CONNECTED) {
+		while(vn200_verifyConnectivity(&vn200)) {
+			usleep(VN_GET_DATA_ASYNC_RATE);
+			vn200_getCurrentAsyncData(&vn200, &sensorData);
 
 			sprintf(gps_buf,
 				"GPS.Lat: %+#7.2f, "
