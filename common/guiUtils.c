@@ -1,7 +1,10 @@
+#define SAMPLE_RADIUS 5
+
 #include "gui.h"
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include "sensorenv.h"
 
 
 
@@ -16,9 +19,9 @@ void guiUtils::rotatePoint(Point& point ,Point& updated_point, Point& origin ,do
 
 void guiUtils::strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy)
 {
-	if(xy == 'x') point.X = ( point.X - origin.X )*factor + origin.X;
+	if(xy == 'x') updated_point.X = ( point.X - origin.X )*factor + origin.X;
 
-	else if(xy == 'y') point.X = ( point.Y - origin.Y )*factor + origin.Y;
+	else if(xy == 'y') updated_point.X = ( point.Y - origin.Y )*factor + origin.Y;
 
 	else{
 		 std::cout << "error in method strech input must be either x or y";
@@ -51,11 +54,11 @@ void guiUtils::strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pt
 	}
 }
 
-
+	
 void guiUtils::normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts)
 {
-    short maxPointX = pts[0].X;
-    short minPointX = pts[0].X;
+    	short maxPointX = pts[0].X;
+    	short minPointX = pts[0].X;
 	short maxPointY = pts[0].Y;
 	short minPointY = pts[0].Y;
 
@@ -85,10 +88,64 @@ void guiUtils::translateVec(std::vector<Point>& pts ,std::vector<Point>& Updated
 	}
 }
 
-//bool guiUtils::isPontInFrame(Point point)
-//{
-//   if
-//}
+
+//GPS Sampling functions
+void guiUtils::GPS2ImageFrame(std::vector<Point>& pts ,double lat, double lon)
+{
+	Point updated_point(0,0);
+	for(unsigned int i=0 ; i<pts.size() ; i++)
+	{
+		gps2linDist(updated_point ,lat, lon);
+		pts[i].X = updated_point.X;
+		pts[i].Y = updated_point.Y;
+	}
+	normVec(pts ,pts);
+}
+
+
+bool guiUtils::inNeighbourhood(Point& p1, Point& p2, double radius)
+{
+	short r = (short)radius;
+	short d = (short)sqrt(((p1.X-p2.X)*p1.X-p2.X)) + ((p1.Y-p2.Y)*(p1.Y-p2.Y)));
+	if ( d < r ) return true;
+ 
+	return false;
+}
+
+double guiUtils::velocityAng(std::vector<double>& velocity)
+{
+	double speed = sqrt( velocity[0]*velocity[0] + velocity[1]^2);
+	if(speed > 0)
+		return 180/PI*atan2(velocity[0],velocity[1]);
+	printf("Somting Wong.. Speed is 0! Call chinese guy to fix! or check in function guiUtils::velocityAng");
+	return 0;			
+}
+
+void guiUtils::samplePoints(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon)
+{
+	//Case no points samples yet.
+	if(vecLatitude.size() == 0){
+		vecLatitude.push_back(newLat);
+		vecLongitude.push_back(newLon);
+	}
+	else{
+	//At least one point was already sampled.
+	
+	//Check if sampling criterion is met. In this case extra point must exceed sampling raduis to previous point.
+		double prevLat = vecLatitude[vecLatitude.size()-1];
+		double prevLon = vecLongitude[vecLongitude.size()-1];
+	
+		gps2linDist(Point& updated_point ,double lat, double lon)
+		if(!(inNeighbourhood(Point& p1, Point& p2, double radius))){
+			vecLatitude.push_back(newLat);
+			vecLongitude.push_back(newLon);
+
+		}
+	}
+}
+
+
+
 
 
 

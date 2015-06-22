@@ -73,6 +73,10 @@ public:
 	void strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double factor, char xy);
 	void normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts);
 	void translateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts ,Point& deltaXY);
+	void GPS2ImageFrame(std::vector<Point>& pts ,double lat, double lon);
+	bool inNeighbourhood(Point& p1, Point& p2, double radius);
+	double velocityAng(std::vector<double>& velocity);
+	void samplePoints(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
 };
 
 void* gui_main(void* arg);

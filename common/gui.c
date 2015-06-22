@@ -245,7 +245,6 @@ void* gui_main(void* arg)
 {
 	short degrees = 0;
 	double horDeg = 0;
-	std::vector<short> velocity;
 	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
@@ -258,6 +257,8 @@ void* gui_main(void* arg)
 	Updated_pts.push_back(Point(0,0));
 	Updated_pts.push_back(Point(0,0));
 	Updated_pts.push_back(Point(0,0));
+
+	std::vector<short> velocity;
 
 	uint ptsIndex = 0;
 
@@ -340,7 +341,11 @@ void* gui_main(void* arg)
 				//if (polygonRGBA(gRenderer,Xtrack_Updated, Ytrack_Updated,n,255, 255, 255, 155))
 					//printf("Priel Ya Manyak!");
                 Point p(300,300);
-                utils.rotateVec(pts , Updated_pts , p , 20);
+                 utils.rotateVec(pts , Updated_pts , p , 20);
+		//Point delXY(-100,-100);
+		//utils.translateVec(pts ,Updated_pts ,delXY);
+		//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
+		//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
 					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
