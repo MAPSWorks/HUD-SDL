@@ -56,8 +56,12 @@ int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,dou
 int RelativePosition1Object(int screenLength, int objectLentgh, double relativePosition);
 
 //GPS and MAP Stuff
-#define Earth_Radius 6372.797560856
+#define Earth_Radius 6372000.797560856 //Meters
 #define PI 3.14159265359
+#define MAP_FRAME_WIDTH 400
+#define MAP_FRAME_LENGTH 400
+#define MAP_FRAME_POS_X 300
+#define MAP_FRAME_POS_Y 300
 
 //Starts up SDL and creates window
 bool init();
@@ -74,12 +78,6 @@ bool reloadText();
 //optimize image surface
 SDL_Surface*  loadSurfaceOptimalImg( std::string path );
 
-//Addditional functions for geometric flow control
-void rotatePts(short x[], short y[], int numPTS, double angle_deg , short origin_x, short origin_y,short x_new[], short y_new[]);
-void shiftPTS(short x[], short y[], int numPTS, short delX, short delY,short x_next[] ,short y_next[]);
-int normPts(double GPS_PTS_X[] ,double GPS_PTS_Y[] ,int numPTS, short frame[] , short MAP_PTS_X[] , short MAP_PTS_Y[]);
-int frameXY(double GPS_PTS_X[] ,double GPS_PTS_Y[] ,int numPTS ,double GPS_frame[]);
-int gps2linearDist(double lat, double lon ,short XYcoordiates[]);
 
 class Point{
 public:
@@ -90,13 +88,13 @@ public:
 
 class guiUtils{
 public:
-	void rotate(Point point ,Point& updated_point, Point& origin ,double ang_Deg);
-	int strech(Point point ,Point& updated_point , Point& origin ,double factor, char xy);
-	int gps2linDist(Point& updated_point ,double lat, double lon);
-	void rotateVec(std::vector<Point> pts ,std::vector<Point>& Updated_pts, Point& origin ,double ang_Deg);
-	int strechVec(std::vector<Point> pts ,std::vector<Point>& Updated_pts, Point& origin ,double factor, char xy);
-	void norm(short frameWidth, short frameLength ,short framePosX ,short framePosY ,std::vector<Point> pts ,std::vector<Point>& Updated_pts);
-	int gps2linDistVec(std::vector<Point>& Updated_pts ,double lat, double lon);
+	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
+	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);
+	void gps2linDist(Point& updated_point ,double lat, double lon);
+	void rotateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double ang_Deg);
+	void strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double factor, char xy);
+	void normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts);
+	void translateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts ,Point& deltaXY);
 };
 
 void* gui_main(void* arg);
