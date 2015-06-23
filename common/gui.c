@@ -186,9 +186,6 @@ void* gui_main(void* arg)
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
-    std::string strVelocity = std::to_string(velocityInt);
-    std::string strGear = std::to_string(gearInt);
-
 	/**** Points for show***/
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(240,280));
