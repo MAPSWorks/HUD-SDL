@@ -16,6 +16,7 @@
 #include "sensorenv.h"
 
 //General
+
 double guiUtils::movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms)
 {
 	if(vectorIN.size()==0) return -1;

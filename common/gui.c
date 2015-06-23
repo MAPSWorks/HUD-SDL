@@ -36,6 +36,7 @@ LTexture gTextVelocity, gTextGear;
 LTexture gVelocityGradient;
 LTexture gGearGradient[6];
 LTexture gNeedleTexture;
+LTexture gCarArrowTexture;
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -120,7 +121,8 @@ bool loadMedia()
 		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png" ) 	&&
 		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png" ) 		&&
 		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont )	&&
-		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont );
+		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont ) &&
+		gCarArrowTexture.loadFromFile( PROJ_HOME "/resources/arrow.png" );
 }
 
 
@@ -150,6 +152,7 @@ void close()
 	gVelocityGradient.free();
 	gNeedleTexture.free();
 	gArtHorzTexture.free();
+	gCarArrowTexture.free();
 
 	//Free global font
 	TTF_CloseFont( gFont );
@@ -184,6 +187,7 @@ void* gui_main(void* arg)
 	int gearInt = 0;
 	int RPMint = 0;
 
+	
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
@@ -231,8 +235,6 @@ void* gui_main(void* arg)
 
 	uint ptsIndex = 0;
 
-	std::vector<Point> pts_Updated;
-
 	//Start up SDL and create window
 	if( !init() ) {
 		printf( "Failed to initialize!\n" );
@@ -258,11 +260,12 @@ void* gui_main(void* arg)
 				numFrames++;
 				velocityInt += VELOCITY_STEP;
 				RPMint      += RPM_STEP;
-				gearInt     += GEAR_STEP;
+				gearInt    += GEAR_STEP;
 				velocityInt %= MAX_VELOCITY;
 				RPMint      %= MAX_RPM;
 				gearInt     %= MAX_GEAR;
-
+				
+				
 				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
 
 				// connecting with the global variables
@@ -287,6 +290,7 @@ void* gui_main(void* arg)
 				gArtHorzTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X, RELATIVE_PLACE_ARTHORZ_Y, 0.0+horDeg);
 				gVelocityGradient.renderRelToScrn(RELATIVE_PLACE_VELOCITY_G_X, RELATIVE_PLACE_VELOCITY_G_Y);
 				gNeedleTexture.renderRelToScrnRel2Object(RELATIVE_PLACE_SPEEDOMETER_X, RELATIVE_PLACE_SPEEDOMETER_Y, gVelocityGradient, -50.0+degrees);
+				gCarArrowTexture.renderRelToScrn(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y);
 
 				//txts
 				reloadText();
@@ -294,7 +298,7 @@ void* gui_main(void* arg)
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
 				Point p(300,300);
-				Point delXY(-80,-50);
+				Point delXY(-125,-80);
 				//utils.rotateVec(pts , Updated_pts , p , 20);
 				//Point delXY(-100,-100);
 				utils.translateVec(pts ,Updated_pts ,delXY);
@@ -302,7 +306,7 @@ void* gui_main(void* arg)
 				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
-					thickLineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y,10 ,100,100,255,155);
+					thickLineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y,LINE_THICKNESS ,100,100,150,155);
 				}
 				//Update screen
 				SDL_RenderPresent( gRenderer );

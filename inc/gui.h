@@ -30,26 +30,26 @@
 #define FONT_7_SIZE     150
 
 // velocity background
-#define RELATIVE_PLACE_VELOCITY_G_X 5.37/10
-#define RELATIVE_PLACE_VELOCITY_G_Y 7.79/10
+#define RELATIVE_PLACE_VELOCITY_G_X 5.34/10
+#define RELATIVE_PLACE_VELOCITY_G_Y 8.74/10
 
 #define RELATIVE_PLACE_RPM_X 5.1/10
-#define RELATIVE_PLACE_RPM_Y 7.7/10
+#define RELATIVE_PLACE_RPM_Y 8.7/10
 
 // fraction that will represent the relative place of the speedometer relative in the screen
 #define RELATIVE_PLACE_SPEEDOMETER_X 6.0/10 // we must use .0 so it will considered as double.
 #define RELATIVE_PLACE_SPEEDOMETER_Y 9.5/10
 
 //Artificial Horizon
-#define RELATIVE_PLACE_ARTHORZ_X 1.0/10
-#define RELATIVE_PLACE_ARTHORZ_Y 7.5/10
+#define RELATIVE_PLACE_ARTHORZ_X 5.0/10
+#define RELATIVE_PLACE_ARTHORZ_Y 5.0/10
 
-#define VEL_FONT_COLOR 	{ 0xFF, 0xFF, 0xFF}
-#define GEAR_FONT_COLOR { 0xFF, 0xFF, 0xFF}
+#define VEL_FONT_COLOR 	{ 0x7F, 0x4B, 0x9F}
+#define GEAR_FONT_COLOR { 0x7F, 0x4B, 0x9F}
 
 //velocity 7 seg font place
 #define RELATIVE_PLACE_FONT_VELOCITY_X 5.7/10
-#define RELATIVE_PLACE_FONT_VELOCITY_Y 8.0/10
+#define RELATIVE_PLACE_FONT_VELOCITY_Y 9.0/10
 
 //Gear 7 segment font place
 #define RELATIVE_PLACE_FONT_GEAR_X 9.0/10
@@ -62,6 +62,12 @@
 #define MAP_FRAME_LENGTH 400
 #define MAP_FRAME_POS_X 300
 #define MAP_FRAME_POS_Y 300
+
+//Map Stuff
+#define LINE_THICKNESS 2 //for map
+#define RELATIVE_PLACE_ARROW_X -1.0/10
+#define RELATIVE_PLACE_ARROW_Y 8.0/10
+
 
 //Starts up SDL and creates window
 bool init();
@@ -85,10 +91,10 @@ public:
 	short Y;
 	Point(int X, int Y);
 };
-
 class guiUtils{
-unsigned int numLastPointsInRadius = 0;
 public:
+	//Delay time
+	void waitFor (unsigned int secs);
   //Point functions
 	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
 	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);

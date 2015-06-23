@@ -16,6 +16,12 @@
 #include "sensorenv.h"
 
 //General
+
+void guiUtils::waitFor (unsigned int secs) {
+    retTime = time(0) + secs;     // Get finishing time.
+    while (time(0) < retTime);    // Loop until it arrives.
+}
+
 double guiUtils::movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms)
 {
 	if(vectorIN.size()==0) return -1;
@@ -229,7 +235,7 @@ void guiUtils::buildMap(std::vector<double>& vecLatitude ,std::vector<double>& v
     	//Set position relative to current location
     	if(vecLatitude.size()>1)
     	{
-    		Point prev_location = originalPts[originalPts.size()-2];
+    		prev_location = originalPts[originalPts.size()-2];
 			}
 			setPosition(mapPts ,prev_location,next_location);
     	//Set Orientation relative to current velocity
