@@ -229,7 +229,7 @@ void guiUtils::buildMap(std::vector<double>& vecLatitude ,std::vector<double>& v
     	//Set position relative to current location
     	if(vecLatitude.size()>1)
     	{
-    		prev_location = originalPts[originalPts.size()-2];
+    		Point prev_location = originalPts[originalPts.size()-2];
 			}
 			setPosition(mapPts ,prev_location,next_location);
     	//Set Orientation relative to current velocity
