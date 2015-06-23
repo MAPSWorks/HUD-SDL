@@ -29,8 +29,9 @@
 #define GEAR_STEP       1
 #define FONT_7_SIZE     150
 
-#define RELATIVE_PLACE_VELOCITY_G_X 5.0/10
-#define RELATIVE_PLACE_VELOCITY_G_Y 8.5/10
+// velocity background
+#define RELATIVE_PLACE_VELOCITY_G_X 5.37/10
+#define RELATIVE_PLACE_VELOCITY_G_Y 7.79/10
 
 #define RELATIVE_PLACE_RPM_X 5.1/10
 #define RELATIVE_PLACE_RPM_Y 7.7/10
@@ -40,8 +41,11 @@
 #define RELATIVE_PLACE_SPEEDOMETER_Y 9.5/10
 
 //Artificial Horizon
-#define RELATIVE_PLACE_ARTHORZ_X 2.0/10
-#define RELATIVE_PLACE_ARTHORZ_Y 5.0/10
+#define RELATIVE_PLACE_ARTHORZ_X 1.0/10
+#define RELATIVE_PLACE_ARTHORZ_Y 7.5/10
+
+#define VEL_FONT_COLOR 	{ 0xFF, 0xFF, 0xFF}
+#define GEAR_FONT_COLOR { 0xFF, 0xFF, 0xFF}
 
 //velocity 7 seg font place
 #define RELATIVE_PLACE_FONT_VELOCITY_X 5.7/10
@@ -49,11 +53,7 @@
 
 //Gear 7 segment font place
 #define RELATIVE_PLACE_FONT_GEAR_X 9.0/10
-#define RELATIVE_PLACE_FONT_GEAR_Y 9.0/10
-
-//place relative position
-int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,double relativePosition);
-int RelativePosition1Object(int screenLength, int objectLentgh, double relativePosition);
+#define RELATIVE_PLACE_FONT_GEAR_Y 8.0/10
 
 //GPS and MAP Stuff
 #define Earth_Radius 6372000.797560856 //Meters

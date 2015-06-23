@@ -16,6 +16,7 @@ int velocity = 0;
 int gear = 0;
 int RPM = 0;
 
+
 std::vector<Point> pts;
 std::vector<Point> Updated_pts;
 
@@ -186,9 +187,6 @@ void* gui_main(void* arg)
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
-    std::string strVelocity = std::to_string(velocityInt);
-    std::string strGear = std::to_string(gearInt);
-
 	/**** Points for show***/
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(240,280));
@@ -313,6 +311,7 @@ void* gui_main(void* arg)
 				gNeedleTexture.renderRelToScrnRel2Object( 	RELATIVE_PLACE_SPEEDOMETER_X, 	RELATIVE_PLACE_SPEEDOMETER_Y, 	gRenderer, 	gVelocityGradient, -50.0+degrees);
 
 				reloadText();
+<<<<<<< HEAD
 				gTextGear.render(
                         ( SCREEN_WIDTH - gTextGear.getWidth() )*RELATIVE_PLACE_FONT_GEAR_X,
                         ( SCREEN_HEIGHT - gTextGear.getHeight() )*RELATIVE_PLACE_FONT_GEAR_Y,
@@ -332,6 +331,20 @@ void* gui_main(void* arg)
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
 					thickLineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y,10 ,100,100,255,155);
+=======
+
+				gTextGear.renderTXTRelToScrn( 		RELATIVE_PLACE_FONT_GEAR_X, 	RELATIVE_PLACE_FONT_GEAR_Y, 	gRenderer);
+				gTextVelocity.renderTXTRelToScrn( 	RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y, gRenderer);
+
+				Point p(300,300);
+				utils.rotateVec(pts , Updated_pts , p , 20);
+				//Point delXY(-100,-100);
+				//utils.translateVec(pts ,Updated_pts ,delXY);
+				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
+				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
+				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++) {
+					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
+>>>>>>> dc679243ebe2a71525acbb825fe6621e1c8e324a
 				}
 				//Update screen
 				SDL_RenderPresent( gRenderer );
