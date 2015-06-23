@@ -33,10 +33,8 @@ TTF_Font *gFont = NULL, *gDigitalFont = NULL;
 //text for the velocity and gear.
 LTexture gTextVelocity, gTextGear;
 
-
 //creating the gear and the velocity gradients.
 LTexture gGearGradient1, gGearGradient2, gGearGradient3, gGearGradient4, gGearGradient5, gGearGradient6, gVelocityGradient;
-
 LTexture gNeedleTexture;
 
 //Artificial Horizon
@@ -50,6 +48,7 @@ int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,dou
 {
 	return ((screenLength - object1Lentgh)*relativePosition) + object1Lentgh/2.0 -object2Length/2.0;
 }
+
 bool init()
 {
 	//Initialization flag
@@ -139,38 +138,38 @@ bool loadMedia()
 	{
 		printf( "Failed to load Gear1 backdround image - texture!\n" );
 		success = false;
-    }
-    if( !gGearGradient2.loadFromFile( PROJ_HOME "/resources/gearFinal2.png",gRenderer ) )
+	}
+	if( !gGearGradient2.loadFromFile( PROJ_HOME "/resources/gearFinal2.png",gRenderer ) )
 	{
 		printf( "Failed to load Gear2 backdround image - texture!\n" );
 		success = false;
-    }
-    if( !gGearGradient3.loadFromFile( PROJ_HOME "/resources/gearFinal3.png",gRenderer ) )
+	}
+	if( !gGearGradient3.loadFromFile( PROJ_HOME "/resources/gearFinal3.png",gRenderer ) )
 	{
 		printf( "Failed to load Gear3 backdround image - texture!\n" );
 		success = false;
-    }
-    if( !gGearGradient4.loadFromFile( PROJ_HOME "/resources/gearFinal4.png",gRenderer ) )
+	}
+	if( !gGearGradient4.loadFromFile( PROJ_HOME "/resources/gearFinal4.png",gRenderer ) )
 	{
 		printf( "Failed to load Gear4 backdround image - texture!\n" );
 		success = false;
-    }
-    if( !gGearGradient5.loadFromFile( PROJ_HOME "/resources/gearFinal5.png",gRenderer ) )
+	}
+	if( !gGearGradient5.loadFromFile( PROJ_HOME "/resources/gearFinal5.png",gRenderer ) )
 	{
 		printf( "Failed to load Gear5 backdround image - texture!\n" );
 		success = false;
-    }
-    if( !gGearGradient6.loadFromFile( PROJ_HOME "/resources/gearFinal6.png",gRenderer ) )
+	}
+	if( !gGearGradient6.loadFromFile( PROJ_HOME "/resources/gearFinal6.png",gRenderer ) )
 	{
 		printf( "Failed to load Gear6 backdround image - texture!\n" );
 		success = false;
-    }
+	}
 
-    if( !gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png",gRenderer ) )
+	if( !gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png",gRenderer ) )
 	{
 		printf( "Failed to load gVelocityGradient backdround image - texture!\n" );
 		success = false;
-    }
+	}
 
 
 
@@ -181,7 +180,7 @@ bool loadMedia()
 	}
 
 
-	if( !gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.gif",gRenderer ) )
+	if( !gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png",gRenderer ) )
 	{
 		printf( "Failed to load artificial horizon image - texture!\n" );
 		success = false;
@@ -196,22 +195,22 @@ bool reloadText()
 {
 	bool success = true;
 	int velocityInt = velocity;
-    int gearInt = gear;
+	int gearInt = gear;
 
-    std::string strVelocity = std::to_string(velocityInt);
-    std::string strGear = std::to_string(gearInt);
+	std::string strVelocity = std::to_string(velocityInt);
+	std::string strGear = std::to_string(gearInt);
 
 	//Render text
 	SDL_Color textColor = { 0xFF, 0xFF, 0xFF };
 
 	if(!gTextVelocity.loadFromRenderedText(strVelocity, textColor,gDigitalFont,gRenderer)){
-        printf( "failed to load velocity text");
-        success = false;
-    }
-    if(!gTextGear.loadFromRenderedText(strGear, textColor,gDigitalFont,gRenderer)){
-        printf( "failed to load Gear text");
-        success = false;
-    }
+		printf( "failed to load velocity text");
+		success = false;
+	}
+	if(!gTextGear.loadFromRenderedText(strGear, textColor,gDigitalFont,gRenderer)){
+		printf( "failed to load Gear text");
+		success = false;
+	}
 
 	return success;
 }
@@ -256,14 +255,16 @@ void* gui_main(void* arg)
 	//double yawDeg = 0;
 	int numFrames = 0;
 
+#ifdef TRACK_FPS
 	Uint32 startTime = SDL_GetTicks();
- 	float fps = 0;
-    int velocityInt = 0;
-    int gearInt = 0;
-    int RPMint = 0;
+	float fps = 0;
+#endif
+	int velocityInt = 0;
+	int gearInt = 0;
+	int RPMint = 0;
 
-    std::string strVelocity = std::to_string(velocityInt);
-    std::string strGear = std::to_string(gearInt);
+	std::string strVelocity = std::to_string(velocityInt);
+	std::string strGear = std::to_string(gearInt);
 
 
 	pts.push_back(Point(200,200));
@@ -310,7 +311,7 @@ void* gui_main(void* arg)
 					}
 				}
 
-                // for demo only. to be connected to the actual values
+				// for demo only. to be connected to the actual values
 				numFrames++;
 				velocityInt += VELOCITY_STEP;
 				RPMint      += RPM_STEP;
@@ -324,12 +325,14 @@ void* gui_main(void* arg)
 				// connecting with the global variables
 				RPM = RPMint;
 				velocity = velocityInt;
-		                gear = gearInt;
+				gear = gearInt;
 
+#ifdef TRACK_FPS
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
+#endif
 
-				horDeg = (double)sensorData.ypr.roll;
+				horDeg = (double)sensorData.ypr.pitch;
 
 
 
@@ -344,73 +347,73 @@ void* gui_main(void* arg)
 						MidPositionRelative(SCREEN_HEIGHT,	gArtHorzTexture.getHeight(), 	gArtHorzTexture.getHeight(),	RELATIVE_PLACE_ARTHORZ_Y),
 						gRenderer, NULL, 0.0+horDeg, NULL, SDL_FLIP_NONE );
 
-                gVelocityGradient.render(
-						MidPositionRelative(SCREEN_WIDTH,	gArtHorzTexture.getWidth(),	gArtHorzTexture.getWidth(), 	RELATIVE_PLACE_VELOCITY_G_X),
-						MidPositionRelative(SCREEN_HEIGHT,	gArtHorzTexture.getHeight(), 	gArtHorzTexture.getHeight(),	RELATIVE_PLACE_VELOCITY_G_Y),
-						gRenderer, NULL, 0.0+horDeg, NULL, SDL_FLIP_NONE );
+				gVelocityGradient.render(
+						MidPositionRelative(SCREEN_WIDTH,	gVelocityGradient.getWidth(),	gVelocityGradient.getWidth(), 	RELATIVE_PLACE_VELOCITY_G_X),
+						MidPositionRelative(SCREEN_HEIGHT,	gVelocityGradient.getHeight(), 	gVelocityGradient.getHeight(),	RELATIVE_PLACE_VELOCITY_G_Y),
+						gRenderer, NULL, 0.0, NULL, SDL_FLIP_NONE );
 
-                gNeedleTexture.render(
+				gNeedleTexture.render(
 						MidPositionRelative(SCREEN_WIDTH,	gGearGradient1.getWidth(),	gNeedleTexture.getWidth(),	RELATIVE_PLACE_SPEEDOMETER_X),
 						MidPositionRelative(SCREEN_HEIGHT,	gGearGradient1.getHeight(), gNeedleTexture.getHeight(),	RELATIVE_PLACE_SPEEDOMETER_Y),
 						gRenderer, NULL, -50.0+degrees, NULL, SDL_FLIP_NONE );
 
-                switch ((RPMint*6)/MAX_RPM + 1)
-                {
-                    case 1:
-                        gGearGradient1.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient1.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient1.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
-                    case 2:
-                        gGearGradient2.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient2.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient2.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
-                    case 3:
-                        gGearGradient3.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient3.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient3.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
-                    case 4:
-                        gGearGradient4.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient4.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient4.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
-                    case 5:
-                        gGearGradient5.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient5.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient5.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
-                    case 6:
-                        gGearGradient6.render(
-                            RelativePosition1Object(SCREEN_WIDTH,	gGearGradient6.getWidth(),	RELATIVE_PLACE_RPM_X),
-                            RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient6.getHeight(),	RELATIVE_PLACE_RPM_Y),
-                            gRenderer );
-                        break;
+				switch ((RPMint*6)/MAX_RPM + 1)
+				{
+					case 1:
+						gGearGradient1.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient1.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient1.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
+					case 2:
+						gGearGradient2.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient2.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient2.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
+					case 3:
+						gGearGradient3.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient3.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient3.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
+					case 4:
+						gGearGradient4.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient4.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient4.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
+					case 5:
+						gGearGradient5.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient5.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient5.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
+					case 6:
+						gGearGradient6.render(
+								RelativePosition1Object(SCREEN_WIDTH,	gGearGradient6.getWidth(),	RELATIVE_PLACE_RPM_X),
+								RelativePosition1Object(SCREEN_HEIGHT,	gGearGradient6.getHeight(),	RELATIVE_PLACE_RPM_Y),
+								gRenderer );
+						break;
 
-                }
+				}
 
 				reloadText();
 				gTextGear.render(
-                        ( SCREEN_WIDTH - gTextGear.getWidth() )*RELATIVE_PLACE_FONT_GEAR_X,
-                        ( SCREEN_HEIGHT - gTextGear.getHeight() )*RELATIVE_PLACE_FONT_GEAR_Y,
-                        gRenderer);
+						( SCREEN_WIDTH - gTextGear.getWidth() )*RELATIVE_PLACE_FONT_GEAR_X,
+						( SCREEN_HEIGHT - gTextGear.getHeight() )*RELATIVE_PLACE_FONT_GEAR_Y,
+						gRenderer);
 				gTextVelocity.render(
-                        ( SCREEN_WIDTH - gTextVelocity.getWidth() )*RELATIVE_PLACE_FONT_VELOCITY_X,
-                        ( SCREEN_HEIGHT - gTextVelocity.getHeight() )*RELATIVE_PLACE_FONT_VELOCITY_Y,
-                        gRenderer);
+						( SCREEN_WIDTH - gTextVelocity.getWidth() )*RELATIVE_PLACE_FONT_VELOCITY_X,
+						( SCREEN_HEIGHT - gTextVelocity.getHeight() )*RELATIVE_PLACE_FONT_VELOCITY_Y,
+						gRenderer);
 
-                Point p(300,300);
-                utils.rotateVec(pts , Updated_pts , p , 20);
-		//Point delXY(-100,-100);
-		//utils.translateVec(pts ,Updated_pts ,delXY);
-		//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
-		//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
+				Point p(300,300);
+				utils.rotateVec(pts , Updated_pts , p , 20);
+				//Point delXY(-100,-100);
+				//utils.translateVec(pts ,Updated_pts ,delXY);
+				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
+				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
 					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
