@@ -38,7 +38,12 @@ class LTexture
 		void setAlpha( Uint8 alpha );
 
 		//Renders texture at given point
-		void render( int x, int y,SDL_Renderer* gRenderer, SDL_Rect* clip = NULL, double angle = 0.0, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
+		void render( int x, int y,SDL_Renderer* gRenderer, double angle = 0.0, SDL_Rect* clip = NULL, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
+
+		//Custom built rendering functions
+		void renderRelToScrnRel2Object(double x, double y,SDL_Renderer* gRenderer, LTexture& obj2, double angle = 0.0);
+		void renderRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle = 0.0);
+		void renderTXTRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle = 0.0);
 
 		//Gets image dimensions
 		int getWidth();

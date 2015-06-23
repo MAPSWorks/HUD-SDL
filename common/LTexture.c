@@ -1,4 +1,14 @@
 #include "LTexture.h"
+#include "gui.h"
+
+static int RelativePosition1Object(int screenLength, int objectLentgh, double relativePosition)
+{
+	return ((screenLength - objectLentgh)*relativePosition);
+}
+static int MidPositionRelative(int screenLength,int object1Lentgh,int object2Length,double relativePosition)
+{
+	return ((screenLength - object1Lentgh)*relativePosition) + object1Lentgh/2.0 -object2Length/2.0;
+}
 
 
 LTexture::LTexture()
@@ -120,7 +130,7 @@ void LTexture::setAlpha( Uint8 alpha )
 	SDL_SetTextureAlphaMod( mTexture, alpha );
 }
 
-void LTexture::render( int x, int y,SDL_Renderer* gRenderer, SDL_Rect* clip, double angle, SDL_Point* center, SDL_RendererFlip flip )
+void LTexture::render( int x, int y,SDL_Renderer* gRenderer, double angle, SDL_Rect* clip, SDL_Point* center, SDL_RendererFlip flip )
 {
 	//Set rendering space and render to screen
 	SDL_Rect renderQuad = { x, y, mWidth, mHeight };
@@ -134,6 +144,24 @@ void LTexture::render( int x, int y,SDL_Renderer* gRenderer, SDL_Rect* clip, dou
 
 	//Render to screen
 	SDL_RenderCopyEx( gRenderer, mTexture, clip, &renderQuad, angle, center, flip );
+}
+
+void LTexture::renderRelToScrnRel2Object(double x, double y,SDL_Renderer* gRenderer, LTexture& obj2, double angle) {
+	render(	MidPositionRelative(SCREEN_WIDTH,	obj2.getWidth(),	getWidth(),	x),
+		MidPositionRelative(SCREEN_HEIGHT,	obj2.getHeight(),	getHeight(),	y),
+		gRenderer, angle);
+}
+
+void LTexture::renderRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle) {
+	render(	RelativePosition1Object(SCREEN_WIDTH,	getWidth(),	x),
+		RelativePosition1Object(SCREEN_HEIGHT,	getHeight(),	y),
+		gRenderer, angle);
+}
+
+void LTexture::renderTXTRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle) {
+	render(	( SCREEN_WIDTH 	-getWidth() 	)*x,
+		( SCREEN_HEIGHT -getHeight() 	)*y,
+		gRenderer, angle);
 }
 
 int LTexture::getWidth()
