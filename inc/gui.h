@@ -88,17 +88,28 @@ public:
 
 class guiUtils{
 public:
+    //Point functions
 	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
 	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);
 	void gps2linDist(Point& updated_point ,double lat, double lon);
+	//Vec functions
 	void rotateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double ang_Deg);
 	void strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double factor, char xy);
-	void normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts);
 	void translateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts ,Point& deltaXY);
-	void GPS2ImageFrame(std::vector<Point>& pts ,double lat, double lon);
+	//General
+    //int movingAVGfilter(std::vector<double>& vectorIN,unsigned int numTerms,std::vector<double>& vectorOUT,double newTerm);
 	bool inNeighbourhood(Point& p1, Point& p2, double radius);
 	double velocityAng(std::vector<double>& velocity);
-	void samplePoints(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
+	//Point sampling
+	//void samplePointNewPoint(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
+	//Map utils
+	void normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts);
+    void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts);
+    //void buildMap(std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon ,std::vector<Point> FramePts);
+    void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
+    void setOrientation(std::vector<Point> mapPts , std::vector<double> velocity);
+    void setPosition(std::vector<Point> mapPts , std::vector<double> location);
+    void setScale(std::vector<Point> mapPts , std::vector<double> velocity ,std::vector<double> location);
 };
 
 void* gui_main(void* arg);

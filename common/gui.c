@@ -255,7 +255,7 @@ void* gui_main(void* arg)
 	guiUtils utils;
 	//double yawDeg = 0;
 	int numFrames = 0;
-#ifdef TRACK_FPS
+
 	Uint32 startTime = SDL_GetTicks();
  	float fps = 0;
     int velocityInt = 0;
@@ -266,19 +266,19 @@ void* gui_main(void* arg)
     std::string strGear = std::to_string(gearInt);
 
 
-//	pts.push_back(Point(200,200));
-//	pts.push_back(Point(300,400));
-//	pts.push_back(Point(400,200));
+	pts.push_back(Point(200,200));
+	pts.push_back(Point(300,400));
+	pts.push_back(Point(400,200));
 
-//	Updated_pts.push_back(Point(0,0));
-//	Updated_pts.push_back(Point(0,0));
-//	Updated_pts.push_back(Point(0,0));
+	Updated_pts.push_back(Point(0,0));
+	Updated_pts.push_back(Point(0,0));
+	Updated_pts.push_back(Point(0,0));
 
-//	std::vector<short> velocity;
+	std::vector<short> vel;
 
-//	uint ptsIndex = 0;
+	uint ptsIndex = 0;
 
-	//std::vector<Point> pts_Updated;
+	std::vector<Point> pts_Updated;
 
 	//Start up SDL and create window
 	if( !init() )
@@ -325,10 +325,10 @@ void* gui_main(void* arg)
 				RPM = RPMint;
 				velocity = velocityInt;
 		                gear = gearInt;
-#ifdef TRACK_FPS
+
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
-#endif
+
 				horDeg = (double)sensorData.ypr.roll;
 
 
@@ -405,15 +405,8 @@ void* gui_main(void* arg)
                         ( SCREEN_HEIGHT - gTextVelocity.getHeight() )*RELATIVE_PLACE_FONT_VELOCITY_Y,
                         gRenderer);
 
-				//load the polygon:
-				//Try to rotate according to Yaw
-				//rotatePts(Xtrack, Ytrack, n, 0.25 , 200,200 ,Xtrack_Updated ,Ytrack_Updated);
-				//shiftPTS(Xtrack,Ytrack,n,Xtrack[(degrees/10+1)%n]-Xtrack[degrees/10%n],Ytrack[(degrees/10+1)%n]-Ytrack[degrees/10%n],Xtrack_Updated, 	Ytrack_Updated);
-
-
-				//if (polygonRGBA(gRenderer,Xtrack_Updated, Ytrack_Updated,n,255, 255, 255, 155)
-//                Point p(300,300);
-//               utils.rotateVec(pts , Updated_pts , p , 20);
+                Point p(300,300);
+                utils.rotateVec(pts , Updated_pts , p , 20);
 		//Point delXY(-100,-100);
 		//utils.translateVec(pts ,Updated_pts ,delXY);
 		//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
@@ -421,18 +414,6 @@ void* gui_main(void* arg)
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
 					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
-
-//				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
-//				{
-//					lineRGBA(gRenderer ,pts[ptsIndex-1].X ,pts[ptsIndex-1].Y ,pts[ptsIndex % pts.size()].X ,pts[ptsIndex % pts.size()].Y ,100,100,255,155);
-//					//ptsUpdated.push_back(pts[ptsIndex]);
-//				}
-//                Point p(300,300);
-//               utils.rotateVec(pts , Updated_pts , p , 20);
-//				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
-//				{
-//					lineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y ,100,100,255,155);
-					//ptsUpdated.push_back(pts[ptsIndex]);
 				}
 				//Update screen
 				SDL_RenderPresent( gRenderer );
