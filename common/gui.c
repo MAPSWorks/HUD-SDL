@@ -24,6 +24,7 @@ SDL_Window* gWindow = NULL;
 
 //The window renderer
 SDL_Renderer* gRenderer = NULL;
+SDL_Renderer** globgRenderer = &gRenderer;
 
 //Globally used font
 TTF_Font *gFont = NULL, *gDigitalFont = NULL;
@@ -32,7 +33,8 @@ TTF_Font *gFont = NULL, *gDigitalFont = NULL;
 LTexture gTextVelocity, gTextGear;
 
 //creating the gear and the velocity gradients.
-LTexture gGearGradient1, gGearGradient2, gGearGradient3, gGearGradient4, gGearGradient5, gGearGradient6, gVelocityGradient;
+LTexture gVelocityGradient;
+LTexture gGearGradient[6];
 LTexture gNeedleTexture;
 
 //Artificial Horizon
@@ -96,7 +98,6 @@ bool init()
 			}
 		}
 	}
-
 	return success;
 }
 
@@ -109,17 +110,17 @@ bool loadMedia()
 		return false;
 	}
 	//Load media
-	return 	gGearGradient1.loadFromFile( PROJ_HOME "/resources/gearFinal1.png",gRenderer ) 		&&
-		gGearGradient2.loadFromFile( PROJ_HOME "/resources/gearFinal2.png",gRenderer ) 		&&
-		gGearGradient3.loadFromFile( PROJ_HOME "/resources/gearFinal3.png",gRenderer ) 		&&
-		gGearGradient4.loadFromFile( PROJ_HOME "/resources/gearFinal4.png",gRenderer ) 		&&
-		gGearGradient5.loadFromFile( PROJ_HOME "/resources/gearFinal5.png",gRenderer ) 		&&
-		gGearGradient6.loadFromFile( PROJ_HOME "/resources/gearFinal6.png",gRenderer ) 		&&
-		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png",gRenderer ) &&
-		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png",gRenderer ) 	&&
-		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png",gRenderer ) 		&&
-		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont,gRenderer )	&&
-		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont,gRenderer );
+	return 	gGearGradient[0].loadFromFile( PROJ_HOME "/resources/gearFinal1.png" ) 		&&
+		gGearGradient[1].loadFromFile( PROJ_HOME "/resources/gearFinal2.png" ) 		&&
+		gGearGradient[2].loadFromFile( PROJ_HOME "/resources/gearFinal3.png" ) 		&&
+		gGearGradient[3].loadFromFile( PROJ_HOME "/resources/gearFinal4.png" ) 		&&
+		gGearGradient[4].loadFromFile( PROJ_HOME "/resources/gearFinal5.png" ) 		&&
+		gGearGradient[5].loadFromFile( PROJ_HOME "/resources/gearFinal6.png" ) 		&&
+		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png" ) &&
+		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png" ) 	&&
+		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png" ) 		&&
+		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont )	&&
+		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont );
 }
 
 
@@ -132,20 +133,20 @@ bool reloadText()
 	std::string strGear = std::to_string(gearInt);
 
 	//Render text
-	return 	gTextVelocity.loadFromRenderedText(strVelocity, VEL_FONT_COLOR,gDigitalFont,gRenderer) &&
-		gTextGear.loadFromRenderedText(strGear, GEAR_FONT_COLOR,gDigitalFont,gRenderer);
+	return 	gTextVelocity.loadFromRenderedText(strVelocity, VEL_FONT_COLOR,gDigitalFont) &&
+		gTextGear.loadFromRenderedText(strGear, GEAR_FONT_COLOR,gDigitalFont);
 }
 
 void close()
 {
 
 	//Free loaded images
-	gGearGradient1.free();
-	gGearGradient2.free();
-	gGearGradient3.free();
-	gGearGradient4.free();
-	gGearGradient5.free();
-	gGearGradient6.free();
+	gGearGradient[0].free();
+	gGearGradient[1].free();
+	gGearGradient[2].free();
+	gGearGradient[3].free();
+	gGearGradient[4].free();
+	gGearGradient[5].free();
 	gVelocityGradient.free();
 	gNeedleTexture.free();
 	gArtHorzTexture.free();
@@ -205,7 +206,7 @@ void* gui_main(void* arg)
 	pts.push_back(Point(200,150));
 	pts.push_back(Point(200,180));
 	pts.push_back(Point(200,200));
-	
+
 
 	Updated_pts.push_back(Point(0,0));
 	Updated_pts.push_back(Point(0,0));
@@ -281,51 +282,24 @@ void* gui_main(void* arg)
 				SDL_RenderClear( gRenderer );
 
 				//Render current frame
+				//pngs
+				gGearGradient[(RPMint*6)/MAX_RPM].renderRelToScrn(RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y );
+				gArtHorzTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X, RELATIVE_PLACE_ARTHORZ_Y, 0.0+horDeg);
+				gVelocityGradient.renderRelToScrn(RELATIVE_PLACE_VELOCITY_G_X, RELATIVE_PLACE_VELOCITY_G_Y);
+				gNeedleTexture.renderRelToScrnRel2Object(RELATIVE_PLACE_SPEEDOMETER_X, RELATIVE_PLACE_SPEEDOMETER_Y, gVelocityGradient, -50.0+degrees);
 
-				switch ((RPMint*6)/MAX_RPM + 1)
-				{
-					case 1:
-						gGearGradient1.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-					case 2:
-						gGearGradient2.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-					case 3:
-						gGearGradient3.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-					case 4:
-						gGearGradient4.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-					case 5:
-						gGearGradient5.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-					case 6:
-						gGearGradient6.renderRelToScrn( RELATIVE_PLACE_RPM_X, RELATIVE_PLACE_RPM_Y, gRenderer );
-						break;
-
-				}
-
-				gArtHorzTexture.renderRelToScrn(		RELATIVE_PLACE_ARTHORZ_X, 	RELATIVE_PLACE_ARTHORZ_Y, 	gRenderer, 	0.0+horDeg);
-				gVelocityGradient.renderRelToScrn( 		RELATIVE_PLACE_VELOCITY_G_X, 	RELATIVE_PLACE_VELOCITY_G_Y, 	gRenderer);
-				gNeedleTexture.renderRelToScrnRel2Object( 	RELATIVE_PLACE_SPEEDOMETER_X, 	RELATIVE_PLACE_SPEEDOMETER_Y, 	gRenderer, 	gVelocityGradient, -50.0+degrees);
-
+				//txts
 				reloadText();
-				gTextGear.render(
-                        ( SCREEN_WIDTH - gTextGear.getWidth() )*RELATIVE_PLACE_FONT_GEAR_X,
-                        ( SCREEN_HEIGHT - gTextGear.getHeight() )*RELATIVE_PLACE_FONT_GEAR_Y,
-                        gRenderer);
-				gTextVelocity.render(
-                        ( SCREEN_WIDTH - gTextVelocity.getWidth() )*RELATIVE_PLACE_FONT_VELOCITY_X,
-                        ( SCREEN_HEIGHT - gTextVelocity.getHeight() )*RELATIVE_PLACE_FONT_VELOCITY_Y,
-                        gRenderer);
+				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
+				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
-        Point p(300,300);
-        Point delXY(-80,-50);
-        //utils.rotateVec(pts , Updated_pts , p , 20);
-		//Point delXY(-100,-100);
-		utils.translateVec(pts ,Updated_pts ,delXY);
-		//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
-		//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
+				Point p(300,300);
+				Point delXY(-80,-50);
+				//utils.rotateVec(pts , Updated_pts , p , 20);
+				//Point delXY(-100,-100);
+				utils.translateVec(pts ,Updated_pts ,delXY);
+				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
+				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
 				{
 					thickLineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y,10 ,100,100,255,155);

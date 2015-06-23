@@ -10,6 +10,8 @@
 #include <cmath>
 #include "common.h"
 
+extern SDL_Renderer** globgRenderer;	//	in order to simpilfy the functions, we only use one window anyway...
+
 class LTexture
 {
 	public:
@@ -20,10 +22,10 @@ class LTexture
 		~LTexture();
 
 		//Loads image at specified path
-		bool loadFromFile( std::string path, SDL_Renderer* gRenderer);
+		bool loadFromFile( std::string path);
 
 		//Creates image from font string
-		bool loadFromRenderedText( std::string textureText, SDL_Color textColor, TTF_Font *gFont,SDL_Renderer* gRenderer );
+		bool loadFromRenderedText( std::string textureText, SDL_Color textColor, TTF_Font *gFont);
 
 		//Deallocates texture
 		void free();
@@ -38,12 +40,12 @@ class LTexture
 		void setAlpha( Uint8 alpha );
 
 		//Renders texture at given point
-		void render( int x, int y,SDL_Renderer* gRenderer, double angle = 0.0, SDL_Rect* clip = NULL, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
+		void render( int x, int y, double angle = 0.0, SDL_Rect* clip = NULL, SDL_Point* center = NULL, SDL_RendererFlip flip = SDL_FLIP_NONE );
 
 		//Custom built rendering functions
-		void renderRelToScrnRel2Object(double x, double y,SDL_Renderer* gRenderer, LTexture& obj2, double angle = 0.0);
-		void renderRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle = 0.0);
-		void renderTXTRelToScrn(double x, double y,SDL_Renderer* gRenderer, double angle = 0.0);
+		void renderRelToScrnRel2Object(double x, double y, LTexture& obj2, double angle = 0.0);
+		void renderRelToScrn(double x, double y, double angle = 0.0);
+		void renderTXTRelToScrn(double x, double y, double angle = 0.0);
 
 		//Gets image dimensions
 		int getWidth();
@@ -52,6 +54,7 @@ class LTexture
 	private:
 		//The actual hardware texture
 		SDL_Texture* mTexture;
+		SDL_Renderer** localgRenderer = globgRenderer;
 
 		//Image dimensions
 		int mWidth;
