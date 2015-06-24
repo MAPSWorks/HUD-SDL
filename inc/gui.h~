@@ -30,7 +30,7 @@
 #define FONT_7_SIZE     150
 
 // velocity background
-#define RELATIVE_PLACE_VELOCITY_G_X 5.32/10
+#define RELATIVE_PLACE_VELOCITY_G_X 5.34/10
 #define RELATIVE_PLACE_VELOCITY_G_Y 8.74/10
 
 #define RELATIVE_PLACE_RPM_X 5.1/10

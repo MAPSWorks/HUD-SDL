@@ -44,8 +44,8 @@
 #define RELATIVE_PLACE_ARTHORZ_X 5.0/10
 #define RELATIVE_PLACE_ARTHORZ_Y 5.0/10
 
-#define VEL_FONT_COLOR 	{ 0x7F, 0x4B, 0x9F}
-#define GEAR_FONT_COLOR { 0x7F, 0x4B, 0x9F}
+#define VEL_FONT_COLOR 	{ 0xFF, 0xFF, 0xFF}
+#define GEAR_FONT_COLOR { 0xFF, 0xFF, 0xFF}
 
 //velocity 7 seg font place
 #define RELATIVE_PLACE_FONT_VELOCITY_X 5.7/10

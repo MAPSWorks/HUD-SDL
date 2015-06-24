@@ -298,11 +298,11 @@ void* gui_main(void* arg)
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
-				Point p(300,300);
+				Point p(200,200);
 				Point delXY(-125,-80);
-				//utils.rotateVec(pts , Updated_pts , p , 20);
 				//Point delXY(-100,-100);
 				utils.translateVec(pts ,Updated_pts ,delXY);
+				//utils.rotateVec(pts , Updated_pts , p , degrees%30);
 				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
 				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
