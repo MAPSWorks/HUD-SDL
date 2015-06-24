@@ -118,7 +118,7 @@ bool loadMedia()
 		gGearGradient[4].loadFromFile( PROJ_HOME "/resources/gearFinal5.png" ) 		&&
 		gGearGradient[5].loadFromFile( PROJ_HOME "/resources/gearFinal6.png" ) 		&&
 		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradient.png" ) &&
-		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png" ) 	&&
+		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2_trial.png" ) 	&&
 		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png" ) 		&&
 		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont )	&&
 		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont ) &&
@@ -184,14 +184,14 @@ void* gui_main(void* arg)
 	float fps = 0;
 #endif
 	int velocityInt = 0;
-	int gearInt = 0;
+	int gearInt = 1;
 	int RPMint = 0;
 
 	
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
-	/**** Points for show***/
+	/**** Points for wasah Priel ya satlan!***/
 	pts.push_back(Point(200,200));
 	pts.push_back(Point(240,280));
 	pts.push_back(Point(280,360));
@@ -260,12 +260,13 @@ void* gui_main(void* arg)
 				numFrames++;
 				velocityInt += VELOCITY_STEP;
 				RPMint      += RPM_STEP;
+				if(numFrames%20 == 0){
 				gearInt    += GEAR_STEP;
+				}
 				velocityInt %= MAX_VELOCITY;
 				RPMint      %= MAX_RPM;
 				gearInt     %= MAX_GEAR;
-				
-				
+				if(gearInt==0) gearInt=1;
 				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
 
 				// connecting with the global variables
