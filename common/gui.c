@@ -16,8 +16,18 @@ int velocity = 0;
 int gear = 0;
 int RPM = 0;
 
-std::vector<Point> pts;
-std::vector<Point> Updated_pts;
+//
+VnVector3 sensorVel;
+double newLat=32.0;
+double newLon=35.0;
+
+
+
+std::vector<Point> originalPts;
+std::vector<Point> mapPts;
+std::vector<VnVector3> vecVelocity;
+std::vector<double> vecLatitude;
+std::vector<double> vecLongitude;
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -31,12 +41,14 @@ TTF_Font *gFont = NULL, *gDigitalFont = NULL;
 
 //text for the velocity and gear.
 LTexture gTextVelocity, gTextGear;
+LTexture gTextGPS;
 
 //creating the gear and the velocity gradients.
 LTexture gVelocityGradient;
 LTexture gGearGradient[6];
 LTexture gNeedleTexture;
 LTexture gCarArrowTexture;
+
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -187,50 +199,49 @@ void* gui_main(void* arg)
 	int gearInt = 1;
 	int RPMint = 0;
 
-	
+
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
-	/**** Points for wasah Priel ya satlan!***/
-	pts.push_back(Point(200,200));
-	pts.push_back(Point(240,280));
-	pts.push_back(Point(280,360));
-	pts.push_back(Point(320,400));
-	pts.push_back(Point(360,420));
-	pts.push_back(Point(400,420));
-	pts.push_back(Point(440,400));
-	pts.push_back(Point(480,360));
-	pts.push_back(Point(440,280));
-	pts.push_back(Point(400,240));
-	pts.push_back(Point(360,200));
-	pts.push_back(Point(320,180));
-	pts.push_back(Point(280,150));
-	pts.push_back(Point(240,100));
-	pts.push_back(Point(200,130));
-	pts.push_back(Point(200,150));
-	pts.push_back(Point(200,180));
-	pts.push_back(Point(200,200));
+	/**** Points for wasah Priel ya satlan!***
+	originalPts.push_back(Point(200,200));
+	originalPts.push_back(Point(240,280));
+	originalPts.push_back(Point(280,360));
+	originalPts.push_back(Point(320,400));
+	originalPts.push_back(Point(360,420));
+	originalPts.push_back(Point(400,420));
+	originalPts.push_back(Point(440,400));
+	originalPts.push_back(Point(480,360));
+	originalPts.push_back(Point(440,280));
+	originalPts.push_back(Point(400,240));
+	originalPts.push_back(Point(360,200));
+	originalPts.push_back(Point(320,180));
+	originalPts.push_back(Point(280,150));
+	originalPts.push_back(Point(240,100));
+	originalPts.push_back(Point(200,130));
+	originalPts.push_back(Point(200,150));
+	originalPts.push_back(Point(200,180));
+	originalPts.push_back(Point(200,200));
 
 
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	Updated_pts.push_back(Point(0,0));
-	/*****/
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	mapPts.push_back(Point(0,0));
+	*****/
 	std::vector<short> vel;
 
 	uint ptsIndex = 0;
@@ -256,11 +267,49 @@ void* gui_main(void* arg)
 					}
 				}
 
+                /******MA Filter*****
+                newLon = 0;
+                newLat = 0;
+                sensorVel = {0};
+                for(unsigned int j = 0;j<LEN_FILTER; ++j){
+                    sensorVel.c0 += sensorData.velBody.c0;
+                    sensorVel.c1 += sensorData.velBody.c1;
+                    sensorVel.c2 += sensorData.velBody.c2;
+                    newLat += sensorData.latitudeLongitudeAltitude.c0;
+                    newLon += sensorData.latitudeLongitudeAltitude.c1;
+                    }
+                newLat = newLat/LEN_FILTER;
+                newLon = newLon/LEN_FILTER;
+                //printf("newLat = %f newLon = %f\n",newLat,newLon);
+                ****End filter*****/
+
+                /**** Simulate GPS for debug****/
+                if(vecLatitude.size()<=10){
+                    newLat+=0.0001;
+                    newLon+=0.0002;
+                    }
+                else if(vecLatitude.size()<=20){
+                    newLat+=0.0003;
+                    newLon+=0.0001;
+                }
+                else if(vecLatitude.size()<=30){
+                    newLat-=0.0001;
+                    newLon-=0.0002;
+                }
+                else if(vecLatitude.size()<=40){
+                    newLat-=0.0003;
+                    newLon-=0.0001;
+                }
+                //printf("newLat = %f , newLon = %f\n",newLat , newLon);
+                /*******************************/
+
+                //printf("Lat = %f , Lon = %f",newLat,newLon);
+
 				// for demo only. to be connected to the actual values
-				numFrames++;
+				/*numFrames++;
 				velocityInt += VELOCITY_STEP;
 				RPMint      += RPM_STEP;
-				if(numFrames%20 == 0){
+				if(numFrames%10 == 0){
 				gearInt    += GEAR_STEP;
 				}
 				velocityInt %= MAX_VELOCITY;
@@ -273,6 +322,7 @@ void* gui_main(void* arg)
 				RPM = RPMint;
 				velocity = velocityInt;
 				gear = gearInt;
+				*/
 
 #ifdef TRACK_FPS
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
@@ -280,6 +330,7 @@ void* gui_main(void* arg)
 #endif
 
 				horDeg = (double)sensorData.ypr.pitch;
+
 
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0 );	//	background screen color
@@ -301,16 +352,32 @@ void* gui_main(void* arg)
 				Point p(200,200);
 				Point delXY(-125,-80);
 				//Point delXY(-100,-100);
-				utils.translateVec(pts ,Updated_pts ,delXY);
+
+                utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel);
+                //printf("pussy1\n");
+                //for(unsigned int i =0;i<originalPts.size();++i){
+                //printf("originalPoint[%d] = (%d,%d)\n",i,originalPts[i].X,originalPts[i].Y);
+                //}
+                mapPts = originalPts;
+                //printf("%d",originalPts.size());
+				//if(originalPts.size()>1){
+                  //  utils.UpdateMap(originalPts ,mapPts ,vecVelocity);
+                //}
+				//utils.translateVec(originalPts ,mapPts ,delXY);
 				//utils.rotateVec(pts , Updated_pts , p , degrees%30);
 				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
 				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
-				for(ptsIndex = 1; ptsIndex <= pts.size() ;ptsIndex++)
+				for(ptsIndex = 1; ptsIndex < originalPts.size() ;ptsIndex++)
 				{
-					thickLineRGBA(gRenderer ,Updated_pts[ptsIndex-1].X ,Updated_pts[ptsIndex-1].Y ,Updated_pts[ptsIndex % pts.size()].X ,Updated_pts[ptsIndex % pts.size()].Y,LINE_THICKNESS ,100,100,150,155);
+                    //printf("pussy2\n");
+
+					thickLineRGBA(gRenderer ,mapPts[ptsIndex-1].X ,mapPts[ptsIndex-1].Y ,mapPts[ptsIndex].X ,mapPts[ptsIndex].Y,LINE_THICKNESS ,100,100,150,155);
+				//printf("pussy3\n");
 				}
 				//Update screen
+				//printf("pussy4\n");
 				SDL_RenderPresent( gRenderer );
+				//printf("pussy5\n");
 			}
 		}
 	}

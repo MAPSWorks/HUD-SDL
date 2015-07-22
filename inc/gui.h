@@ -12,6 +12,7 @@
 #include "common.h"
 #include <vector>
 #include <iostream>
+#include "vn_linearAlgebra.h"
 
 //Screen dimension constants
 #define SCREEN_WIDTH 1280
@@ -25,7 +26,7 @@
 
 // for the wassach Biba is gay :)
 #define VELOCITY_STEP   2
-#define RPM_STEP        50
+#define RPM_STEP        400
 #define GEAR_STEP       1
 #define FONT_7_SIZE     150
 
@@ -58,16 +59,23 @@
 //GPS and MAP Stuff
 #define Earth_Radius 6372000.797560856 //Meters
 #define PI 3.14159265359
-#define MAP_FRAME_WIDTH 400
-#define MAP_FRAME_LENGTH 400
-#define MAP_FRAME_POS_X 300
+#define MAP_FRAME_WIDTH 250 //Must be equal to lenth to preserve proportion
+#define MAP_FRAME_LENGTH 250 //Must be equal to width to preserve proportion
+#define MAP_FRAME_POS_X 50
 #define MAP_FRAME_POS_Y 300
+#define LEN_FILTER 10
 
 //Map Stuff
 #define LINE_THICKNESS 2 //for map
 #define RELATIVE_PLACE_ARROW_X -1.0/10
 #define RELATIVE_PLACE_ARROW_Y 8.0/10
 
+//
+#define MAX_SPEED 200
+#define AVG_SPEED 100
+
+#define HEIGHT_OF_HEAD 1.5 //Meters of the ground
+#define MAX_PTS_IN_LINE_OF_SIGHT 10;
 
 //Starts up SDL and creates window
 bool init();
@@ -91,6 +99,14 @@ public:
 	short Y;
 	Point(int X, int Y);
 };
+
+class Coordinate{
+public:
+    double X;
+    double Y;
+    Coordinate(double X, double Y);
+};
+
 class guiUtils{
 public:
 	//Delay time
@@ -98,26 +114,29 @@ public:
   //Point functions
 	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
 	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);
-	void gps2linDist(Point& updated_point ,double lat, double lon);
+    void gps2linDist(Coordinate& updated_coordinate ,double lat, double lon);
 	//Vec functions
 	void rotateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double ang_Deg);
 	void strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts, Point& origin ,double factor, char xy);
 	void translateVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts ,Point& deltaXY);
 	//General
-	double movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms);
-	bool inNeighbourhood(Point& p1, Point& p2, double radius);
-	double velocityAng(std::vector<double>& velocity);
+	//double movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms);
+	bool inNeighbourhood(Coordinate& p1, Coordinate& p2, double radius);
+	bool isNoiseSample(Coordinate& p1, Coordinate& p2, double radius);
+    double angle(std::vector<double>& vec1 , std::vector<double>& vec2);
 	//Point sampling
-	bool sampleNewPoint(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon, unsigned int& numLastPointsInRadius);
+    bool sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
 	//Map utils
-	void normVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pts);
-  void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts);
-  void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
-  void setOrientation(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> velocity);
-  void setPosition(std::vector<Point> mapPts , Point prev_location,Point next_location);
-  void setScale(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> velocity);
-  //High level
-  void buildMap(std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon ,std::vector<Point> originalPts ,std::vector<Point> mapPts,unsigned int& numLastPointsInRadius,std::vector<double> velocity);
+    void normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts);
+    void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts);
+    void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
+    void setOrientation(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> prevVelocity,std::vector<double> nextVelocity);
+    void setPosition(std::vector<Point> mapPts , Point prev_location,Point next_location);
+    void setScale(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> velocity);
+    //High level
+    void buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity);
+    void UpdateMap(std::vector<Point>& originalPts ,std::vector<Point>& mapPts ,std::vector<VnVector3>& vecVelocity);
+
 };
 
 void* gui_main(void* arg);
