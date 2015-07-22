@@ -287,18 +287,42 @@ void* gui_main(void* arg)
                 if(vecLatitude.size()<=10){
                     newLat+=0.0001;
                     newLon+=0.0002;
+                    sensorVel.c0 = 10;
+                    sensorVel.c1 = 20;
+                    sensorVel.c2 = 0;
                     }
                 else if(vecLatitude.size()<=20){
                     newLat+=0.0003;
                     newLon+=0.0001;
+                    sensorVel.c0 = 30;
+                    sensorVel.c1 = 10;
+                    sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=30){
-                    newLat-=0.0001;
-                    newLon-=0.0002;
+                    newLat+=0.0004;
+                    sensorVel.c0 = 40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=40){
+                    newLat-=0.0001;
+                    newLon-=0.0002;
+                    sensorVel.c0 = -10;
+                    sensorVel.c1 = -20;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=50){
                     newLat-=0.0003;
                     newLon-=0.0001;
+                    sensorVel.c0 = -30;
+                    sensorVel.c1 = -10;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=60){
+                    newLat-=0.0004;
+                    sensorVel.c0 = -40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
                 }
                 //printf("newLat = %f , newLon = %f\n",newLat , newLon);
                 /*******************************/
@@ -349,9 +373,10 @@ void* gui_main(void* arg)
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
-				Point p(200,200);
-				Point delXY(-125,-80);
+				//Point p(200,200);
+				//Point delXY(-125,-80);
 				//Point delXY(-100,-100);
+				Point origin(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
 
                 utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel);
                 //printf("pussy1\n");
@@ -359,12 +384,14 @@ void* gui_main(void* arg)
                 //printf("originalPoint[%d] = (%d,%d)\n",i,originalPts[i].X,originalPts[i].Y);
                 //}
                 mapPts = originalPts;
+                //utils.zoomMap(originalPts ,mapPts, 0.5 ,origin);
+
                 //printf("%d",originalPts.size());
 				//if(originalPts.size()>1){
-                  //  utils.UpdateMap(originalPts ,mapPts ,vecVelocity);
+                //    utils.UpdateMap(originalPts ,mapPts ,vecVelocity);
                 //}
 				//utils.translateVec(originalPts ,mapPts ,delXY);
-				//utils.rotateVec(pts , Updated_pts , p , degrees%30);
+				//utils.rotateVec(originalPts , mapPts , p , 30);
 				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
 				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
 				for(ptsIndex = 1; ptsIndex < originalPts.size() ;ptsIndex++)

@@ -83,7 +83,7 @@ void guiUtils::strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pt
 void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts)
 {
     Point tempPoint(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
-    printf("tempPointInitialization (%d,%d)\n",tempPoint.X,tempPoint.Y);
+    //printf("tempPointInitialization (%d,%d)\n",tempPoint.X,tempPoint.Y);
     if(pts.size()==0){return;}
     else if(pts.size()==1){FramePts.push_back(tempPoint);}
     else{
@@ -98,9 +98,10 @@ void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePt
             minX = (minX < pts[i].X) ? minX:pts[i].X;
             minY = (minY < pts[i].Y) ? minY:pts[i].Y;
         }
-        printf("maxX,minX (%f,%f) maxY,minY (%f,%f)\n",maxX,minX,maxY,minY);
-        printf("maxX-minX %f maxY-minY %f\n",maxX-minX,maxY-minY);
+        //printf("maxX,minX (%f,%f) maxY,minY (%f,%f)\n",maxX,minX,maxY,minY);
+        //printf("maxX-minX %f maxY-minY %f\n",maxX-minX,maxY-minY);
         //Refresh points to newely normalized map
+        //Notice that on the frame plane has inverted Y coordinate
         for(unsigned int i=0 ; i<pts.size()-1 ; ++i){
             if(maxX>minX){
                 tempPoint.X = (pts[i].X - minX)/(maxX - minX)*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
@@ -242,10 +243,10 @@ void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& v
     //Normalize points to frame.
     //printf("fag6\n");
     normVec(gpsPts ,FramePts);
-    for (unsigned int i = 0; i<FramePts.size();++i){
-        printf("FramePts = (%d,%d) size = %d\n",FramePts[i].X,FramePts[i].Y,FramePts.size());
-        printf("GPSPts = (%f,%f) size = %d\n",gpsPts[i].X,gpsPts[i].Y,gpsPts.size());
-        }
+    //for (unsigned int i = 0; i<FramePts.size();++i){
+      //  printf("FramePts = (%d,%d) size = %d\n",FramePts[i].X,FramePts[i].Y,FramePts.size());
+      //  printf("GPSPts = (%f,%f) size = %d\n",gpsPts[i].X,gpsPts[i].Y,gpsPts.size());
+      //  }
 }
 
 /*************************Map Utilities********************************/
@@ -287,39 +288,7 @@ void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>&
 
 void guiUtils::UpdateMap(std::vector<Point>& originalPts ,std::vector<Point>& mapPts ,std::vector<VnVector3>& vecVelocity)
 {
-    Point prev_location(0,0);
-    Point next_location(0,0);
-    Point delLocation(0,0);
-    std::vector<double> nextVelocity = {0};
-    std::vector<double> prevVelocity = {0};
-    std::vector<double> zero3 = {0};
-    Point zero(0,0);
 
-    Point origin(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y);
-
-    if(originalPts.size()>1)
-    {
-        nextVelocity[0] = (double)vecVelocity[vecVelocity.size()-1].c0;
-        nextVelocity[1] = (double)vecVelocity[vecVelocity.size()-1].c1;
-        nextVelocity[2] = (double)vecVelocity[vecVelocity.size()-1].c2;
-
-        prevVelocity[0] = (double)vecVelocity[vecVelocity.size()-2].c0;
-        prevVelocity[1] = (double)vecVelocity[vecVelocity.size()-2].c1;
-        prevVelocity[2] = (double)vecVelocity[vecVelocity.size()-2].c2;
-
-        prev_location = mapPts[mapPts.size()-2];
-        next_location = mapPts[mapPts.size()-1];
-
-        delLocation.X = prev_location.X;
-        delLocation.Y = prev_location.Y;
-        rotatePoint(delLocation,delLocation,zero,-angle(prevVelocity,nextVelocity));
-
-        setPosition(mapPts,origin,delLocation);
-        setOrientation(originalPts, mapPts , prevVelocity ,nextVelocity);
-    }
-
-
-    setScale(originalPts ,mapPts ,nextVelocity);
 }
 
 /******************Line of sight functions************************/
