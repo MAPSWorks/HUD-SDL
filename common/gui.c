@@ -16,7 +16,10 @@ int velocity = 0;
 int gear = 0;
 int RPM = 0;
 
-//
+
+/***Eden's Block**/
+
+
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
@@ -28,6 +31,17 @@ std::vector<Point> mapPts;
 std::vector<VnVector3> vecVelocity;
 std::vector<double> vecLatitude;
 std::vector<double> vecLongitude;
+
+std::vector<Point> originalPts_Old;
+std::vector<Point> mapPts_Old;
+std::vector<VnVector3> vecVelocity_Old;
+std::vector<double> vecLatitude_Old;
+std::vector<double> vecLongitude_Old;
+int LapCounter=0;
+double LapTime=0;
+int trailPointIdx = -1;
+
+/**********/
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -203,48 +217,6 @@ void* gui_main(void* arg)
 	std::string strVelocity = std::to_string(velocityInt);
 	std::string strGear = std::to_string(gearInt);
 
-	/**** Points for wasah Priel ya satlan!***
-	originalPts.push_back(Point(200,200));
-	originalPts.push_back(Point(240,280));
-	originalPts.push_back(Point(280,360));
-	originalPts.push_back(Point(320,400));
-	originalPts.push_back(Point(360,420));
-	originalPts.push_back(Point(400,420));
-	originalPts.push_back(Point(440,400));
-	originalPts.push_back(Point(480,360));
-	originalPts.push_back(Point(440,280));
-	originalPts.push_back(Point(400,240));
-	originalPts.push_back(Point(360,200));
-	originalPts.push_back(Point(320,180));
-	originalPts.push_back(Point(280,150));
-	originalPts.push_back(Point(240,100));
-	originalPts.push_back(Point(200,130));
-	originalPts.push_back(Point(200,150));
-	originalPts.push_back(Point(200,180));
-	originalPts.push_back(Point(200,200));
-
-
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	mapPts.push_back(Point(0,0));
-	*****/
-	std::vector<short> vel;
-
-	uint ptsIndex = 0;
 
 	//Start up SDL and create window
 	if( !init() ) {
@@ -285,41 +257,81 @@ void* gui_main(void* arg)
 
                 /**** Simulate GPS for debug****/
                 if(vecLatitude.size()<=10){
-                    newLat+=0.0001;
-                    newLon+=0.0002;
+                    newLat+=0.00001;
+                    newLon+=0.00002;
                     sensorVel.c0 = 10;
                     sensorVel.c1 = 20;
                     sensorVel.c2 = 0;
                     }
                 else if(vecLatitude.size()<=20){
-                    newLat+=0.0003;
-                    newLon+=0.0001;
+                    newLat+=0.00003;
+                    newLon+=0.00001;
                     sensorVel.c0 = 30;
                     sensorVel.c1 = 10;
                     sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=30){
-                    newLat+=0.0004;
+                    newLat+=0.00004;
                     sensorVel.c0 = 40;
                     sensorVel.c1 = 0;
                     sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=40){
-                    newLat-=0.0001;
-                    newLon-=0.0002;
+                    newLat-=0.00001;
+                    newLon-=0.00002;
                     sensorVel.c0 = -10;
                     sensorVel.c1 = -20;
                     sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=50){
-                    newLat-=0.0003;
-                    newLon-=0.0001;
+                    newLat-=0.00003;
+                    newLon-=0.00001;
                     sensorVel.c0 = -30;
                     sensorVel.c1 = -10;
                     sensorVel.c2 = 0;
                 }
                 else if(vecLatitude.size()<=60){
-                    newLat-=0.0004;
+                    newLat-=0.00004;
+                    sensorVel.c0 = -40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=70){
+                    newLat+=0.00001;
+                    newLon+=0.00002;
+                    sensorVel.c0 = 10;
+                    sensorVel.c1 = 20;
+                    sensorVel.c2 = 0;
+                    }
+                else if(vecLatitude.size()<=80){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
+                    sensorVel.c0 = 30;
+                    sensorVel.c1 = 10;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=90){
+                    newLat+=0.00004;
+                    sensorVel.c0 = 40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=100){
+                    newLat-=0.00001;
+                    newLon-=0.00002;
+                    sensorVel.c0 = -10;
+                    sensorVel.c1 = -20;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=110){
+                    newLat-=0.00003;
+                    newLon-=0.00001;
+                    sensorVel.c0 = -30;
+                    sensorVel.c1 = -10;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=120){
+                    newLat-=0.00004;
                     sensorVel.c0 = -40;
                     sensorVel.c1 = 0;
                     sensorVel.c2 = 0;
@@ -373,38 +385,51 @@ void* gui_main(void* arg)
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
-				//Point p(200,200);
-				//Point delXY(-125,-80);
-				//Point delXY(-100,-100);
-				Point origin(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
+/********************Eden's MF block bitch!!************************/
 
                 utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel);
-                //printf("pussy1\n");
-                //for(unsigned int i =0;i<originalPts.size();++i){
-                //printf("originalPoint[%d] = (%d,%d)\n",i,originalPts[i].X,originalPts[i].Y);
-                //}
+                //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
+                trailPointIdx = utils.isClosedLoop(vecVelocity,vecLatitude,vecLongitude);
+                //This is where the loop starts (Also where it ends)
+                if(trailPointIdx>-1)
+                {
+                    printf("closedLoopDetected\n");
+                    vecVelocity_Old.clear();
+                    vecLatitude_Old.clear();
+                    vecLongitude_Old.clear();
+                    originalPts_Old.clear();
+                    mapPts_Old.clear();
+                    for(unsigned int i=0 ; i<vecLatitude.size() ; ++i)
+                    {
+                        vecVelocity_Old.push_back(vecVelocity[i]);
+                        vecLatitude_Old.push_back(vecLatitude[i]);
+                        vecLongitude_Old.push_back(vecLongitude[i]);
+                        originalPts_Old.push_back(originalPts[i]);
+                    }
+                    vecVelocity.clear();
+                    vecLatitude.clear();
+                    vecLongitude.clear();
+                    originalPts.clear();
+                    mapPts.clear();
+                    vecVelocity.push_back(vecVelocity_Old[trailPointIdx]);
+                    vecLatitude.push_back(vecLatitude_Old[trailPointIdx]);
+                    vecLongitude.push_back(vecLongitude_Old[trailPointIdx]);
+                    originalPts.push_back(originalPts[trailPointIdx]);
+                }
                 mapPts = originalPts;
-                //utils.zoomMap(originalPts ,mapPts, 0.5 ,origin);
-
-                //printf("%d",originalPts.size());
-				//if(originalPts.size()>1){
-                //    utils.UpdateMap(originalPts ,mapPts ,vecVelocity);
-                //}
-				//utils.translateVec(originalPts ,mapPts ,delXY);
-				//utils.rotateVec(originalPts , mapPts , p , 30);
-				//utils.strechVec(pts ,Updated_pts, p ,0.5, 'y');
-				//utils.strechVec(pts ,Updated_pts, p ,0.2, 'x');
-				for(ptsIndex = 1; ptsIndex < originalPts.size() ;ptsIndex++)
+                mapPts_Old=originalPts_Old;
+                for(unsigned int idx = 1; idx < originalPts_Old.size() ; ++idx)
+                {
+                    thickLineRGBA(gRenderer ,mapPts_Old[idx-1].X ,mapPts_Old[idx-1].Y ,mapPts_Old[idx].X ,mapPts_Old[idx].Y,LINE_THICKNESS ,100,100,150,155);
+                }
+                //Draw new Map green
+				for(unsigned int idx = 1; idx < originalPts.size() ; ++idx)
 				{
-                    //printf("pussy2\n");
-
-					thickLineRGBA(gRenderer ,mapPts[ptsIndex-1].X ,mapPts[ptsIndex-1].Y ,mapPts[ptsIndex].X ,mapPts[ptsIndex].Y,LINE_THICKNESS ,100,100,150,155);
-				//printf("pussy3\n");
+					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
-				//Update screen
-				//printf("pussy4\n");
+
+/*************************************************************************/
 				SDL_RenderPresent( gRenderer );
-				//printf("pussy5\n");
 			}
 		}
 	}

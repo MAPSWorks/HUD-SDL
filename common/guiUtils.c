@@ -4,10 +4,12 @@
 
 //Local defines
 #define SAMPLE_RADIUS 3
+#define LOOP_DETECTION_RADIUS 5
 #define NOISE_RADIUS 56
 #define FILTER_WIDTH 10
 #define VEHICLE_ORIGIN_X 0
 #define VEHICLE_ORIGIN_Y 0
+#define THRESHHOLD_ANGLE 15
 
 //Local includes
 #include "gui.h"
@@ -17,19 +19,6 @@
 #include "sensorenv.h"
 
 //General
-
-/*double guiUtils::movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms)
-{
-	if(vectorIN.size()==0) return -1;
-	double some = 0;
-	unsigned int actural_num_terms = (newTerm < vectorIN.size()) ? newTerm:vectorIN.size();
-	for(unsigned int i=0 ; i<actural_num_terms ; i++)
-	{
-		some += vectorIN[i];
-	}
-	return some/actural_num_terms;
-}
-*/
 
 Point::Point(int X, int Y) : X(X), Y(Y) {};
 Coordinate::Coordinate(double X,double Y) : X(X), Y(Y) {};
@@ -56,7 +45,6 @@ void guiUtils::gps2linDist(Coordinate& updated_coordinate ,double lat, double lo
 {
 	updated_coordinate.X = Earth_Radius*cos(lat/180.0*PI)*cos(lon/180.0*PI);
 	updated_coordinate.Y = Earth_Radius*cos(lat/180.0*PI)*sin(lon/180.0*PI);
-	//printf("updated coordinate (X,Y) = (%f,%f)\n",updated_coordinate.X , updated_coordinate.Y);
 }
 
 
@@ -83,7 +71,7 @@ void guiUtils::strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pt
 void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts)
 {
     Point tempPoint(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
-    //printf("tempPointInitialization (%d,%d)\n",tempPoint.X,tempPoint.Y);
+
     if(pts.size()==0){return;}
     else if(pts.size()==1){FramePts.push_back(tempPoint);}
     else{
@@ -98,10 +86,7 @@ void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePt
             minX = (minX < pts[i].X) ? minX:pts[i].X;
             minY = (minY < pts[i].Y) ? minY:pts[i].Y;
         }
-        //printf("maxX,minX (%f,%f) maxY,minY (%f,%f)\n",maxX,minX,maxY,minY);
-        //printf("maxX-minX %f maxY-minY %f\n",maxX-minX,maxY-minY);
-        //Refresh points to newely normalized map
-        //Notice that on the frame plane has inverted Y coordinate
+
         for(unsigned int i=0 ; i<pts.size()-1 ; ++i){
             if(maxX>minX){
                 tempPoint.X = (pts[i].X - minX)/(maxX - minX)*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
@@ -151,10 +136,21 @@ bool guiUtils::isNoiseSample(Coordinate& p1, Coordinate& p2, double radius)
 	return false;
 }
 
-double guiUtils::angle(std::vector<double>& vec1 , std::vector<double>& vec2)
+double guiUtils::VnAngle(VnVector3 vec1 ,VnVector3 vec2)
 {
-		return 180/PI*atan2(vec2[0]-vec1[0] ,vec2[1]-vec1[1]);
+		return 180/PI*atan2((double)vec2.c0-(double)vec1.c0 ,(double)vec2.c1-(double)vec1.c1);
 }
+
+double guiUtils::CoordinateAngle(Coordinate p1 ,Coordinate p2)
+{
+		return 180/PI*atan2(p1.X-p2.X ,p1.Y-p2.Y);
+}
+
+double guiUtils::pointAngle(Point p1 ,Point p2)
+{
+		return 180/PI*atan2((double)p1.X-(double)p2.X ,(double)p1.Y-(double)p2.Y);
+}
+
 
 bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon)
 {
@@ -162,52 +158,40 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
     bool newPointSampled = false;
 	//Case no points samples yet.
     if(newLat == 0 || newLon == 0) {
-    //printf("test2\n");
     //No signal
     printf("No GPS Signal \n");
     return false;
     }
 
 	else{
-        //printf("test3\n");
         if(vecLatitude.size()==0){
-            //printf("test4_start\n");
 			vecLatitude.push_back(newLat);
 			vecLongitude.push_back(newLon);
 			vecVelocity.push_back(vel);
 			newPointSampled = true;
-			//printf("test4-End\n");
         }
         else{
-            //printf("test5\n");
-            //printf("Aquired GPS Signal \n");
-            //At least one point was already sampled.
 
-            //Check if sampling criterion is met. In this case extra point must exceed sampling raduis to previous point.
             double prevLat = vecLatitude[vecLatitude.size()-1];
             double prevLon = vecLongitude[vecLongitude.size()-1];
             Coordinate prevCoordinate(0,0);
             Coordinate nextCoordinate(0,0);
             Point zero(0,0);
-            //printf("prevLat = %f prevLon = %f\n" , prevLat,prevLon);
-            //printf("newLat = %f newLon = %f\n" , newLat,newLon);
+
             gps2linDist(prevCoordinate ,prevLat, prevLon);
             gps2linDist(nextCoordinate ,newLat, newLon);
 
-            //printf("test5-end\n");
 
             if(!(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) && !(inNeighbourhood(prevCoordinate, nextCoordinate, SAMPLE_RADIUS))){
-            //printf("test6\n");
+
                 vecLatitude.push_back(newLat);
                 vecLongitude.push_back(newLon);
                 vecVelocity.push_back(vel);
                 newPointSampled = true;
-                //printf("new point sampled newLat = %f , newLon = %f\n",newLat,newLon);
+
             }
             else{
-                //printf("test8\n");
-                //while in the neighbourhood keep averging out the last point.
-                //printf("prev = (%f,%f) next = (%f,%f)\n",prevCoordinate.X,prevCoordinate.Y,nextCoordinate.X,nextCoordinate.Y);
+
                 if(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) {printf("Noise Detected\n");}
                 vecLatitude[vecLatitude.size()-1] = (prevLat + newLat) / 2;
                 vecLongitude[vecLongitude.size()-1] = (prevLon + newLon) / 2;
@@ -216,8 +200,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 vecVelocity[vecVelocity.size()-1].c1 = (vel.c1 + vecVelocity[vecVelocity.size()-1].c1) / 2;
                 vecVelocity[vecVelocity.size()-1].c2 = (vel.c2 + vecVelocity[vecVelocity.size()-1].c2) / 2;
                 newPointSampled = false;
-                //printf("(%f,%f) pussy in the neighbourhood\n" ,vecLatitude[vecLatitude.size()-1] ,vecLongitude[vecLatitude.size()-1]);
-                //printf("test9\n");
+
             }
 		}
 	}
@@ -227,26 +210,16 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 
 void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts)
 {
-    //printf("fag1\n");
     std::vector<Coordinate> gpsPts;
     Coordinate tempCoordinate(0,0);
     //Latitiude & Longitude to linear distance of all points collected so far.
-    //printf("fag2\n");
     for (unsigned int i=0 ; i<vecLatitude.size() ; i++)
     {
-        //printf("fag3\n");
         gps2linDist(tempCoordinate ,vecLatitude[i], vecLongitude[i]);
-        //printf("fag4\n");
         gpsPts.push_back(tempCoordinate);
-        //printf("fag5\n");
     }
     //Normalize points to frame.
-    //printf("fag6\n");
     normVec(gpsPts ,FramePts);
-    //for (unsigned int i = 0; i<FramePts.size();++i){
-      //  printf("FramePts = (%d,%d) size = %d\n",FramePts[i].X,FramePts[i].Y,FramePts.size());
-      //  printf("GPSPts = (%f,%f) size = %d\n",gpsPts[i].X,gpsPts[i].Y,gpsPts.size());
-      //  }
 }
 
 /*************************Map Utilities********************************/
@@ -257,28 +230,6 @@ void guiUtils::zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,
     strechVec(pts ,Updated_pts, origin ,factor, 'y');
 }
 
-void guiUtils::setOrientation(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> prevVelocity,std::vector<double> nextVelocity)
-{
-		Point origin(VEHICLE_ORIGIN_X,VEHICLE_ORIGIN_Y);
-		rotateVec(mapPts ,mapPts, origin ,-angle(prevVelocity , nextVelocity));
-}
-void guiUtils::setPosition(std::vector<Point> mapPts , Point prev_location,Point next_location)
-{
-		short delX = next_location.X - prev_location.X;
-		short delY = next_location.Y - prev_location.Y;
-		Point delXY(0,0);
-		delXY.X = delX;
-		delXY.Y = delY;
-		Point origin(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y);
-		translateVec(mapPts ,mapPts ,delXY);
-}
-void guiUtils::setScale(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> velocity)
-{
-		double speed = sqrt(velocity[0]*velocity[0] + velocity[1]*velocity[1]);
-		double factor = (MAX_SPEED-speed)/AVG_SPEED;
-		Point origin(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y);
-		zoomMap(mapPts ,mapPts, factor ,origin);
-}
 
 void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity)
 {
@@ -286,24 +237,66 @@ void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>&
         gps2frame(vecLatitude,vecLongitude,originalPts);
 }
 
-void guiUtils::UpdateMap(std::vector<Point>& originalPts ,std::vector<Point>& mapPts ,std::vector<VnVector3>& vecVelocity)
+
+int guiUtils::isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude)
+{
+    if(vecLatitude.size()>SIZE_TRAIL)
+    {
+        printf("test1\n");
+        Coordinate currCo(0,0);
+        VnVector3 currVel = vecVelocity[vecVelocity.size()-1];
+        Coordinate tempCo(0,0);
+        VnVector3 tempVel = {0};
+        gps2linDist(currCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
+        printf("test2\n");
+        for(unsigned int i=0 ; i<vecLatitude.size()-SIZE_TRAIL ; ++i)
+        {
+            printf("test3\n");
+            gps2linDist(tempCo,vecLatitude[i],vecLongitude[i]);
+            printf("*****tempCo-currCo = (%f,%f)******\n" ,tempCo.X-currCo.X,tempCo.Y-currCo.Y);
+            printf("*****tempVel-currVel = (%f,%f)******\n" ,tempVel.c0-currVel.c0,tempVel.c1-currVel.c1);
+            if(inNeighbourhood(tempCo,currCo,LOOP_DETECTION_RADIUS))
+            {   printf("test4\n");
+                tempVel = vecVelocity[i];
+                if(vnSpeed(tempVel)==0 || vnSpeed(currVel)==0)
+                {
+                printf("test5\n Angle = %f\n",VnAngle(vnHat(tempVel),vnHat(currVel)));
+                printf("test5\n Speed(temp,curr) = (%f,%f)\n",vnSpeed(tempVel),vnSpeed(currVel));
+                continue;/**Test here for trail distortion to reject Loop completion test!!!**/
+                }
+                else if(VnAngle(vnHat(tempVel),vnHat(currVel))<THRESHHOLD_ANGLE)
+                {
+                    printf("test6\n");
+                    return i; //in case of OverShoot.
+                }
+            }
+        }
+    }
+    printf("test7\n");
+    return -1;
+}
+
+double guiUtils::vnSpeed(VnVector3 vel)
+{
+    return sqrt(vel.c0*vel.c0+vel.c1*vel.c1);
+}
+
+VnVector3 guiUtils::vnHat(VnVector3 vec)
+{
+    VnVector3 temp = {0};
+    if(vnSpeed(vec)>0){
+        temp.c0 = vec.c0/vnSpeed(vec);
+        temp.c1 = vec.c1/vnSpeed(vec);
+        }
+    return temp;
+}
+
+void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Old,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old)
 {
 
 }
 
 /******************Line of sight functions************************/
-
-//void skewPts()
-//{
-
-//}
-//void setTrailInLineOfSight(std::vector<Point> mapPts)
-//{
-//    unsigned int upperIndx = (mapPts.size() < MAX_PTS_IN_LINE_OF_SIGHT) ? mapPts.size() : MAX_PTS_IN_LINE_OF_SIGHT;
-    //Duplicate at most MAX_PTS_IN_LINE_OF_SIGHT points to either side of the field of view
-
-    //Vertical projection according to height
-//}
 
 
 

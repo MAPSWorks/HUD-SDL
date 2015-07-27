@@ -69,6 +69,8 @@
 #define LINE_THICKNESS 2 //for map
 #define RELATIVE_PLACE_ARROW_X -1.0/10
 #define RELATIVE_PLACE_ARROW_Y 8.0/10
+#define ARROW_POS_X 100
+#define ARROW_POS_Y 200
 
 //
 #define MAX_SPEED 200
@@ -76,7 +78,11 @@
 
 #define HEIGHT_OF_HEAD 1.5 //Meters of the ground
 #define MAX_PTS_IN_LINE_OF_SIGHT 10;
-
+#define SIZE_TRAIL 4
+#define NORMALIZED_HEADING_DIFF 0.05
+#define FP_PRECITION 100
+// A number between 0 & 1 which representd the difference between heading of normalized velocities.
+//This value may be chosen so as to correspond to a threshold angle.
 //Starts up SDL and creates window
 bool init();
 
@@ -123,19 +129,22 @@ public:
 	//double movingAveragefilter(std::vector<double>& vectorIN,double newTerm,unsigned int num_terms);
 	bool inNeighbourhood(Coordinate& p1, Coordinate& p2, double radius);
 	bool isNoiseSample(Coordinate& p1, Coordinate& p2, double radius);
-    double angle(std::vector<double>& vec1 , std::vector<double>& vec2);
+    double VnAngle(VnVector3 vec1 ,VnVector3 vec2);
+    double CoordinateAngle(Coordinate p1 ,Coordinate p2);
+    double pointAngle(Point p1 ,Point p2);
+    double vnSpeed(VnVector3 vel);
+    VnVector3 vnHat(VnVector3 vec);
+
 	//Point sampling
     bool sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
 	//Map utils
     void normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts);
     void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts);
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
-    void setOrientation(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> prevVelocity,std::vector<double> nextVelocity);
-    void setPosition(std::vector<Point> mapPts , Point prev_location,Point next_location);
-    void setScale(std::vector<Point> originalPts, std::vector<Point> mapPts , std::vector<double> velocity);
     //High level
     void buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity);
-    void UpdateMap(std::vector<Point>& originalPts ,std::vector<Point>& mapPts ,std::vector<VnVector3>& vecVelocity);
+    void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Old,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old);
+    int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 
 };
 
