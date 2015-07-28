@@ -319,7 +319,7 @@ VnVector3 guiUtils::vnHat(VnVector3 vec)
     return temp;
 }
 
-void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Old,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old)
+void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Prev,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old)
 {
 
 }

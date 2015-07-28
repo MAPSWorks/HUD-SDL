@@ -26,6 +26,8 @@ double newLon=35.0;
 bool frameDef = false;
 std::vector<double> frame;
 
+bool flagSim = true;
+
 
 std::vector<Point> originalPts;
 std::vector<Point> mapPts;
@@ -33,11 +35,11 @@ std::vector<VnVector3> vecVelocity;
 std::vector<double> vecLatitude;
 std::vector<double> vecLongitude;
 
-std::vector<Point> originalPts_Old;
-std::vector<Point> mapPts_Old;
-std::vector<VnVector3> vecVelocity_Old;
-std::vector<double> vecLatitude_Old;
-std::vector<double> vecLongitude_Old;
+std::vector<Point> originalPts_Prev;
+std::vector<Point> mapPts_Prev;
+std::vector<VnVector3> vecVelocity_Prev;
+std::vector<double> vecLatitude_Prev;
+std::vector<double> vecLongitude_Prev;
 int LapCounter=0;
 double LapTime=0;
 int trailPointIdx = -1;
@@ -257,6 +259,61 @@ void* gui_main(void* arg)
                 ****End filter*****/
 
                 /**** Simulate GPS for debug****/
+                if(flagSim){
+                if(vecLatitude.size()<=10)
+                {
+                    newLat+=0.00001;
+                    newLon+=0.00002;
+                    sensorVel.c0 = 10;
+                    sensorVel.c1 = 20;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=20){
+                    newLat+=0.00001;
+                    newLon+=0.00002;
+                    sensorVel.c0 = 10;
+                    sensorVel.c1 = 20;
+                    sensorVel.c2 = 0;
+                    }
+                else if(vecLatitude.size()<=30){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
+                    sensorVel.c0 = 30;
+                    sensorVel.c1 = 10;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=40){
+                    newLat+=0.00004;
+                    sensorVel.c0 = 40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=50){
+                    newLat-=0.00001;
+                    newLon-=0.00002;
+                    sensorVel.c0 = -10;
+                    sensorVel.c1 = -20;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=60){
+                    newLat-=0.00003;
+                    newLon-=0.00001;
+                    sensorVel.c0 = -30;
+                    sensorVel.c1 = -10;
+                    sensorVel.c2 = 0;
+                }
+                else if(vecLatitude.size()<=70){
+                    newLat-=0.00004;
+                    sensorVel.c0 = -40;
+                    sensorVel.c1 = 0;
+                    sensorVel.c2 = 0;
+                    if(vecLatitude.size()==70)
+                    {
+                        flagSim=false;
+                    }
+                }
+                }
+                else{
                 if(vecLatitude.size()<=10){
                     newLat+=0.00001;
                     newLon+=0.00002;
@@ -297,45 +354,6 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     sensorVel.c2 = 0;
                 }
-                else if(vecLatitude.size()<=70){
-                    newLat+=0.00001;
-                    newLon+=0.00002;
-                    sensorVel.c0 = 10;
-                    sensorVel.c1 = 20;
-                    sensorVel.c2 = 0;
-                    }
-                else if(vecLatitude.size()<=80){
-                    newLat+=0.00003;
-                    newLon+=0.00001;
-                    sensorVel.c0 = 30;
-                    sensorVel.c1 = 10;
-                    sensorVel.c2 = 0;
-                }
-                else if(vecLatitude.size()<=90){
-                    newLat+=0.00004;
-                    sensorVel.c0 = 40;
-                    sensorVel.c1 = 0;
-                    sensorVel.c2 = 0;
-                }
-                else if(vecLatitude.size()<=100){
-                    newLat-=0.00001;
-                    newLon-=0.00002;
-                    sensorVel.c0 = -10;
-                    sensorVel.c1 = -20;
-                    sensorVel.c2 = 0;
-                }
-                else if(vecLatitude.size()<=110){
-                    newLat-=0.00003;
-                    newLon-=0.00001;
-                    sensorVel.c0 = -30;
-                    sensorVel.c1 = -10;
-                    sensorVel.c2 = 0;
-                }
-                else if(vecLatitude.size()<=120){
-                    newLat-=0.00004;
-                    sensorVel.c0 = -40;
-                    sensorVel.c1 = 0;
-                    sensorVel.c2 = 0;
                 }
                 //printf("newLat = %f , newLon = %f\n",newLat , newLon);
                 /*******************************/
@@ -396,37 +414,33 @@ void* gui_main(void* arg)
                     printf("trailPointIndx = %d\n",trailPointIdx);
                     frameDef = true;
                     printf("closedLoopDetected\n");
-                    vecVelocity_Old.clear();
-                    vecLatitude_Old.clear();
-                    vecLongitude_Old.clear();
-                    originalPts_Old.clear();
-                    mapPts_Old.clear();
-                    for(unsigned int i=0 ; i<vecLatitude.size() ; ++i)
+                    vecVelocity_Prev.clear();
+                    vecLatitude_Prev.clear();
+                    vecLongitude_Prev.clear();
+                    originalPts_Prev.clear();
+                    mapPts_Prev.clear();
+                    for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
                     {
-                        vecVelocity_Old.push_back(vecVelocity[i]);
-                        vecLatitude_Old.push_back(vecLatitude[i]);
-                        vecLongitude_Old.push_back(vecLongitude[i]);
-                        originalPts_Old.push_back(originalPts[i]);
+                        vecVelocity_Prev.push_back(vecVelocity[i]);
+                        vecLatitude_Prev.push_back(vecLatitude[i]);
+                        vecLongitude_Prev.push_back(vecLongitude[i]);
+                        originalPts_Prev.push_back(originalPts[i]);
                     }
+                    vecVelocity_Prev.push_back(vecVelocity[trailPointIdx]);
+                    vecLatitude_Prev.push_back(vecLatitude[trailPointIdx]);
+                    vecLongitude_Prev.push_back(vecLongitude[trailPointIdx]);
+                    originalPts_Prev.push_back(originalPts[trailPointIdx]);
                     vecVelocity.clear();
                     vecLatitude.clear();
                     vecLongitude.clear();
                     originalPts.clear();
                     mapPts.clear();
-                    vecVelocity.push_back(vecVelocity_Old[trailPointIdx]);
-                    vecLatitude.push_back(vecLatitude_Old[trailPointIdx]);
-                    vecLongitude.push_back(vecLongitude_Old[trailPointIdx]);
-                    originalPts.push_back(originalPts[trailPointIdx]);
-                }
-                else
-                {
-                    trailPointIdx = -1;
                 }
                 mapPts = originalPts;
-                mapPts_Old=originalPts_Old;
-                for(unsigned int idx = 1; idx < originalPts_Old.size() ; ++idx)
+                mapPts_Prev=originalPts_Prev;
+                for(unsigned int idx = 1; idx < originalPts_Prev.size() ; ++idx)
                 {
-                    thickLineRGBA(gRenderer ,mapPts_Old[idx-1].X ,mapPts_Old[idx-1].Y ,mapPts_Old[idx].X ,mapPts_Old[idx].Y,LINE_THICKNESS ,100,100,150,155);
+                    thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,100,100,150,155);
                 }
                 //Draw new Map green
 				for(unsigned int idx = 1; idx < originalPts.size() ; ++idx)
