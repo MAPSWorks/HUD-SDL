@@ -23,7 +23,8 @@ int RPM = 0;
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
-
+bool frameDef = false;
+std::vector<double> frame;
 
 
 std::vector<Point> originalPts;
@@ -385,14 +386,15 @@ void* gui_main(void* arg)
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
-/********************Eden's MF block bitch!!************************/
-
-                utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel);
+/********************Eden's block************************/
+                utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
                 trailPointIdx = utils.isClosedLoop(vecVelocity,vecLatitude,vecLongitude);
                 //This is where the loop starts (Also where it ends)
                 if(trailPointIdx>-1)
                 {
+                    printf("trailPointIndx = %d\n",trailPointIdx);
+                    frameDef = true;
                     printf("closedLoopDetected\n");
                     vecVelocity_Old.clear();
                     vecLatitude_Old.clear();
@@ -416,6 +418,10 @@ void* gui_main(void* arg)
                     vecLongitude.push_back(vecLongitude_Old[trailPointIdx]);
                     originalPts.push_back(originalPts[trailPointIdx]);
                 }
+                else
+                {
+                    trailPointIdx = -1;
+                }
                 mapPts = originalPts;
                 mapPts_Old=originalPts_Old;
                 for(unsigned int idx = 1; idx < originalPts_Old.size() ; ++idx)
@@ -427,7 +433,6 @@ void* gui_main(void* arg)
 				{
 					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
-
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
 			}

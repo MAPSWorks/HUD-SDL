@@ -4,7 +4,7 @@
 
 //Local defines
 #define SAMPLE_RADIUS 3
-#define LOOP_DETECTION_RADIUS 5
+#define LOOP_DETECTION_RADIUS 4
 #define NOISE_RADIUS 56
 #define FILTER_WIDTH 10
 #define VEHICLE_ORIGIN_X 0
@@ -68,42 +68,70 @@ void guiUtils::strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pt
 }
 
 
-void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts)
+void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame)
 {
     Point tempPoint(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
-
-    if(pts.size()==0){return;}
-    else if(pts.size()==1){FramePts.push_back(tempPoint);}
-    else{
-    //Find Map borders
-        double maxX=pts[0].X;
-        double maxY=pts[0].Y;
-        double minX=pts[0].X;
-        double minY=pts[0].Y;
-        for(unsigned int i=0 ; i<pts.size() ; ++i){
-            maxX = (maxX > pts[i].X) ? maxX:pts[i].X;
-            maxY = (maxY > pts[i].Y) ? maxY:pts[i].Y;
-            minX = (minX < pts[i].X) ? minX:pts[i].X;
-            minY = (minY < pts[i].Y) ? minY:pts[i].Y;
-        }
-
-        for(unsigned int i=0 ; i<pts.size()-1 ; ++i){
-            if(maxX>minX){
-                tempPoint.X = (pts[i].X - minX)/(maxX - minX)*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
-                }
-            if(maxY>minY){
-                tempPoint.Y = -(pts[i].Y - minY)/(maxY - minY)*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
-                }
-            FramePts[i] = tempPoint;
-        }
-        if(maxX>minX){
-                tempPoint.X = (pts[pts.size()-1].X - minX)/(maxX - minX)*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
-                }
-        if(maxY>minY){
-                tempPoint.Y = -(pts[pts.size()-1].Y - minY)/(maxY - minY)*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
-                }
+    //printf("test1\n");
+    if(pts.size()==0)
+    {
+        //printf("test2\n");
+        return;
+    }
+    else if(pts.size()==1){
+        //printf("test3\n");
         FramePts.push_back(tempPoint);
     }
+    else{
+    //Find Map borders
+    //printf("test4\n");
+    if(!frameDef)
+    {
+        //printf("test5\n");
+        frame.clear();
+        frame.push_back(pts[0].X);//maxX
+        frame.push_back(pts[0].Y);//maxY
+        frame.push_back(pts[0].X);//minX
+        frame.push_back(pts[0].Y);//minY
+    }
+    else
+    {
+        //printf("test6 size pts = %d , size frame = %d\n",pts.size(),frame.size());
+        frame[0] = (frame[0] > pts[0].X) ? frame[0]:pts[0].X;//maxX
+        frame[1] = (frame[1] > pts[0].Y) ? frame[1]:pts[0].Y;//maxY
+        frame[2] = (frame[2] < pts[0].X) ? frame[2]:pts[0].X;//minX
+        frame[3] = (frame[3] < pts[0].Y) ? frame[3]:pts[0].Y;//minY
+        //printf("test6Pass\n");
+    }
+    for(unsigned int i=0 ; i<pts.size() ; ++i)
+    {
+        //printf("test7\n");
+        frame[0] = (frame[0] > pts[i].X) ? frame[0]:pts[i].X;
+        frame[1] = (frame[1] > pts[i].Y) ? frame[1]:pts[i].Y;
+        frame[2] = (frame[2] < pts[i].X) ? frame[2]:pts[i].X;
+        frame[3] = (frame[3] < pts[i].Y) ? frame[3]:pts[i].Y;
+    }
+    for(unsigned int i=0 ; i<pts.size()-1 ; ++i){
+        //printf("test8\n");
+        if(frame[0]>frame[2]){
+            tempPoint.X = (pts[i].X - frame[2])/(frame[0] - frame[2])*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
+            }
+        if(frame[1]>frame[3]){
+            tempPoint.Y = -(pts[i].Y - frame[3])/(frame[1] - frame[3])*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
+            }
+        FramePts[i] = tempPoint;
+    }
+    if(frame[0]>frame[2]){
+            //printf("test9\n");
+            tempPoint.X = (pts[pts.size()-1].X - frame[2])/(frame[0] - frame[2])*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
+            }
+    if(frame[1]>frame[3]){
+            //printf("test10\n");
+            tempPoint.Y = -(pts[pts.size()-1].Y - frame[3])/(frame[1] - frame[3])*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
+            }
+    //printf("test11\n");
+    FramePts.push_back(tempPoint);
+    }
+    //printf("test12\n");
 }
 
 
@@ -208,7 +236,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 }
 
 
-void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts)
+void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame)
 {
     std::vector<Coordinate> gpsPts;
     Coordinate tempCoordinate(0,0);
@@ -219,7 +247,7 @@ void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& v
         gpsPts.push_back(tempCoordinate);
     }
     //Normalize points to frame.
-    normVec(gpsPts ,FramePts);
+    normVec(gpsPts ,FramePts,frameDef,frame);
 }
 
 /*************************Map Utilities********************************/
@@ -231,10 +259,10 @@ void guiUtils::zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,
 }
 
 
-void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity)
+void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
 {
     if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,newLat,newLon))
-        gps2frame(vecLatitude,vecLongitude,originalPts);
+        gps2frame(vecLatitude,vecLongitude,originalPts,frameDef,frame);
 }
 
 
@@ -242,37 +270,37 @@ int guiUtils::isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<doub
 {
     if(vecLatitude.size()>SIZE_TRAIL)
     {
-        printf("test1\n");
+        //printf("test1\n");
         Coordinate currCo(0,0);
         VnVector3 currVel = vecVelocity[vecVelocity.size()-1];
         Coordinate tempCo(0,0);
         VnVector3 tempVel = {0};
         gps2linDist(currCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
-        printf("test2\n");
+        //printf("test2\n");
         for(unsigned int i=0 ; i<vecLatitude.size()-SIZE_TRAIL ; ++i)
         {
-            printf("test3\n");
+            //printf("test3\n");
             gps2linDist(tempCo,vecLatitude[i],vecLongitude[i]);
-            printf("*****tempCo-currCo = (%f,%f)******\n" ,tempCo.X-currCo.X,tempCo.Y-currCo.Y);
-            printf("*****tempVel-currVel = (%f,%f)******\n" ,tempVel.c0-currVel.c0,tempVel.c1-currVel.c1);
+            //printf("*****tempCo-currCo = (%f,%f)******\n" ,tempCo.X-currCo.X,tempCo.Y-currCo.Y);
+            //printf("*****tempVel-currVel = (%f,%f)******\n" ,tempVel.c0-currVel.c0,tempVel.c1-currVel.c1);
             if(inNeighbourhood(tempCo,currCo,LOOP_DETECTION_RADIUS))
-            {   printf("test4\n");
+            {   //printf("test4\n");
                 tempVel = vecVelocity[i];
                 if(vnSpeed(tempVel)==0 || vnSpeed(currVel)==0)
                 {
-                printf("test5\n Angle = %f\n",VnAngle(vnHat(tempVel),vnHat(currVel)));
-                printf("test5\n Speed(temp,curr) = (%f,%f)\n",vnSpeed(tempVel),vnSpeed(currVel));
+                //printf("test5\n Angle = %f\n",VnAngle(vnHat(tempVel),vnHat(currVel)));
+                //printf("test5\n Speed(temp,curr) = (%f,%f)\n",vnSpeed(tempVel),vnSpeed(currVel));
                 continue;/**Test here for trail distortion to reject Loop completion test!!!**/
                 }
                 else if(VnAngle(vnHat(tempVel),vnHat(currVel))<THRESHHOLD_ANGLE)
                 {
-                    printf("test6\n");
+                    //printf("test6\n");
                     return i; //in case of OverShoot.
                 }
             }
         }
     }
-    printf("test7\n");
+    //printf("test7\n");
     return -1;
 }
 

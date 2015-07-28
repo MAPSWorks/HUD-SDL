@@ -78,7 +78,7 @@
 
 #define HEIGHT_OF_HEAD 1.5 //Meters of the ground
 #define MAX_PTS_IN_LINE_OF_SIGHT 10;
-#define SIZE_TRAIL 4
+#define SIZE_TRAIL 3
 #define NORMALIZED_HEADING_DIFF 0.05
 #define FP_PRECITION 100
 // A number between 0 & 1 which representd the difference between heading of normalized velocities.
@@ -138,11 +138,11 @@ public:
 	//Point sampling
     bool sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
 	//Map utils
-    void normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts);
-    void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts);
+    void normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
+    void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
     //High level
-    void buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity);
+    void buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
     void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Old,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 
