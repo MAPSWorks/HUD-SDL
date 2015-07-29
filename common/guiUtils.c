@@ -131,7 +131,12 @@ void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePt
             tempPoint.Y = -(pts[pts.size()-1].Y - frame[3])/scale*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
             }
     //printf("test11\n");
-    FramePts.push_back(tempPoint);
+    if(pts.size() > FramePts.size())
+        FramePts.push_back(tempPoint);
+    else if(pts.size() == FramePts.size())
+        FramePts[FramePts.size()-1] = tempPoint;
+    else
+        printf("Error in guiUtils::normVec() Frame pts size exceeds actual number of sampled points");
     }
     //printf("test12\n");
 }
@@ -240,16 +245,23 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 
 void guiUtils::gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame)
 {
+    //printf("testGPSframe1");
     std::vector<Coordinate> gpsPts;
     Coordinate tempCoordinate(0,0);
     //Latitiude & Longitude to linear distance of all points collected so far.
+    //printf("testGPSframe2");
     for (unsigned int i=0 ; i<vecLatitude.size() ; i++)
     {
+        //printf("testGPSframe3");
         gps2linDist(tempCoordinate ,vecLatitude[i], vecLongitude[i]);
+        //printf("testGPSframe4");
         gpsPts.push_back(tempCoordinate);
+        //printf("testGPSframe5");
     }
     //Normalize points to frame.
+    //printf("testGPSframe6");
     normVec(gpsPts ,FramePts,frameDef,frame);
+    //printf("testGPSframe7");
 }
 
 /*************************Map Utilities********************************/
@@ -261,10 +273,14 @@ void guiUtils::zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,
 }
 
 
-void guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
+bool guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
 {
     if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,newLat,newLon))
+    {
         gps2frame(vecLatitude,vecLongitude,originalPts,frameDef,frame);
+        return true;
+    }
+    return false;
 }
 
 
@@ -321,9 +337,24 @@ VnVector3 guiUtils::vnHat(VnVector3 vec)
     return temp;
 }
 
-void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Prev,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old)
+void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled)
 {
-
+    //Curr map
+    VnVector3 vnZero = {0};
+    mapPts.clear();
+    //printf("size = %d\n",originalPts.size());
+    for(unsigned int i=0 ; i<originalPts.size() ; ++i)
+    {
+        mapPts.push_back(originalPts[i]);
+    }
+    if(originalPts.size()>0)
+    {
+        //deltaXY.X = MAP_FRAME_POS_X - originalPts[originalPts.size()-1].X ;
+        //deltaXY.Y = MAP_FRAME_POS_Y - originalPts[originalPts.size()-1].Y ;
+        translateVec(originalPts ,mapPts ,deltaXY);
+        rotateVec(originalPts ,mapPts, origin ,0);
+        printf("origin = (%d,%d) VnAngle = %f , delXY = (%d,%d)\n",origin.X,origin.Y,VnAngle(vecVelocity[vecVelocity.size()-1],vnZero),deltaXY.X,deltaXY.Y);
+    }
 }
 
 /******************Line of sight functions************************/

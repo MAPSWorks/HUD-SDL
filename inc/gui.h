@@ -69,8 +69,8 @@
 #define LINE_THICKNESS 2 //for map
 #define RELATIVE_PLACE_ARROW_X -1.0/10
 #define RELATIVE_PLACE_ARROW_Y 8.0/10
-#define ARROW_POS_X 100
-#define ARROW_POS_Y 200
+#define ARROW_POS_X 75
+#define ARROW_POS_Y 150
 
 //
 #define MAX_SPEED 200
@@ -142,8 +142,8 @@ public:
     void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
     //High level
-    void buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
-    void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& originalPts_Old,std::vector<Point>& mapPts,std::vector<Point>& mapPts_Old);
+    bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
+    void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 
 };
