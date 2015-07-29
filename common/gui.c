@@ -588,12 +588,14 @@ void* gui_main(void* arg)
                     mapPts.clear();
                 }
                 //printf("test3\n");
+                origin.X = originalPts[originalPts.size()-1].X ;
+                origin.Y = originalPts[originalPts.size()-1].Y ;
+                //origin.X=ARROW_POS_X;
+                //origin.Y=ARROW_POS_Y;
                 if(newPointSampled){
                     //printf("test4\n");
-                    origin.X = originalPts[originalPts.size()-1].X;
-                    origin.Y = originalPts[originalPts.size()-1].Y;
-                    //deltaXY.X =  - originalPts[originalPts.size()-1].X ;
-                    //deltaXY.Y =  - originalPts[originalPts.size()-1].Y ;
+                    deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
+                    deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
                     //Updating map stuff
                     //printf("test5\n");
                     utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled);
@@ -601,7 +603,7 @@ void* gui_main(void* arg)
                     utils.gps2frame(vecLatitude_Prev,vecLongitude_Prev,originalPts_Prev,frameDef,frame);
                     //printf("test7\n");
                     utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled);
-                    //printf("test8\n");
+                    //printf("tes   t8\n");
                 }
 
                 //printf("test10\n");

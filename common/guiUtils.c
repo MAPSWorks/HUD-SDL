@@ -341,6 +341,7 @@ void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& map
 {
     //Curr map
     VnVector3 vnZero = {0};
+    Point zero(0,0);
     mapPts.clear();
     //printf("size = %d\n",originalPts.size());
     for(unsigned int i=0 ; i<originalPts.size() ; ++i)
@@ -351,8 +352,11 @@ void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& map
     {
         //deltaXY.X = MAP_FRAME_POS_X - originalPts[originalPts.size()-1].X ;
         //deltaXY.Y = MAP_FRAME_POS_Y - originalPts[originalPts.size()-1].Y ;
-        translateVec(originalPts ,mapPts ,deltaXY);
-        rotateVec(originalPts ,mapPts, origin ,0);
+        //translateVec(originalPts ,mapPts ,deltaXY);
+        rotateVec(originalPts ,mapPts, origin , VnAngle(vecVelocity[vecVelocity.size()],vecVelocity[vecVelocity.size()-1]));
+        translateVec(mapPts ,mapPts ,deltaXY);
+        std::cout << "vec length: " << vecVelocity.size() << std::endl;
+        std::cout << "last: (" << vecVelocity[vecVelocity.size()].c0 << "," << vecVelocity[vecVelocity.size()].c1 << std::endl;
         printf("origin = (%d,%d) VnAngle = %f , delXY = (%d,%d)\n",origin.X,origin.Y,VnAngle(vecVelocity[vecVelocity.size()-1],vnZero),deltaXY.X,deltaXY.Y);
     }
 }

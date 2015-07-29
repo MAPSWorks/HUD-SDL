@@ -67,10 +67,10 @@
 
 //Map Stuff
 #define LINE_THICKNESS 2 //for map
-#define RELATIVE_PLACE_ARROW_X -1.0/10
-#define RELATIVE_PLACE_ARROW_Y 8.0/10
-#define ARROW_POS_X 75
-#define ARROW_POS_Y 150
+#define RELATIVE_PLACE_ARROW_X -3.0/10
+#define RELATIVE_PLACE_ARROW_Y 12.0/10
+#define ARROW_POS_X 250
+#define ARROW_POS_Y 175
 
 //
 #define MAX_SPEED 200
