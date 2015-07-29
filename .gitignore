@@ -30,5 +30,8 @@
 # .swp files
 *.swp
 
+# temp files
+*~
+
 # codeblocks project files
 *.cbp
