@@ -71,6 +71,7 @@ void guiUtils::strechVec(std::vector<Point>& pts ,std::vector<Point>& Updated_pt
 void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame)
 {
     Point tempPoint(MAP_FRAME_POS_X,MAP_FRAME_POS_Y);
+    double scale;
     //printf("test1\n");
     if(pts.size()==0)
     {
@@ -110,23 +111,24 @@ void guiUtils::normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePt
         frame[2] = (frame[2] < pts[i].X) ? frame[2]:pts[i].X;
         frame[3] = (frame[3] < pts[i].Y) ? frame[3]:pts[i].Y;
     }
+    scale = (frame[0] - frame[2] > frame[1] - frame[3]) ? (frame[0] - frame[2]) : (frame[1] - frame[3]);
     for(unsigned int i=0 ; i<pts.size()-1 ; ++i){
         //printf("test8\n");
         if(frame[0]>frame[2]){
-            tempPoint.X = (pts[i].X - frame[2])/(frame[0] - frame[2])*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
+            tempPoint.X = (pts[i].X - frame[2])/scale*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
             }
         if(frame[1]>frame[3]){
-            tempPoint.Y = -(pts[i].Y - frame[3])/(frame[1] - frame[3])*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
+            tempPoint.Y = -(pts[i].Y - frame[3])/scale*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
             }
         FramePts[i] = tempPoint;
     }
     if(frame[0]>frame[2]){
             //printf("test9\n");
-            tempPoint.X = (pts[pts.size()-1].X - frame[2])/(frame[0] - frame[2])*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
+            tempPoint.X = (pts[pts.size()-1].X - frame[2])/scale*MAP_FRAME_LENGTH + MAP_FRAME_POS_X;
             }
     if(frame[1]>frame[3]){
             //printf("test10\n");
-            tempPoint.Y = -(pts[pts.size()-1].Y - frame[3])/(frame[1] - frame[3])*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
+            tempPoint.Y = -(pts[pts.size()-1].Y - frame[3])/scale*MAP_FRAME_WIDTH + MAP_FRAME_POS_Y;
             }
     //printf("test11\n");
     FramePts.push_back(tempPoint);
