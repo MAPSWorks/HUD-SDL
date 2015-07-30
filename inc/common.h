@@ -5,7 +5,7 @@
 #define SENS_REFRESH_RATE 10000
 #define BUF_SIZE 64
 
-#define PROJ_HOME "."
+#define PROJ_HOME "/home/odroid/project/"
 
 #endif
 

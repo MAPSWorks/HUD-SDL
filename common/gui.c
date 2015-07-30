@@ -19,7 +19,6 @@ int RPM = 0;
 
 /***Eden's Block**/
 
-
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
@@ -28,7 +27,6 @@ std::vector<double> frame;
 
 bool flagSim = true;
 VnVector3 vnZero = {0};
-
 
 std::vector<Point> originalPts;
 std::vector<Point> mapPts;
@@ -47,6 +45,7 @@ int trailPointIdx = -1;
 Point deltaXY(0,0);
 Point origin(0,0);
 bool newPointSampled = false;
+bool gpsSig = false;
 int counter = 0; //for simulation
 /**********/
 
@@ -210,7 +209,7 @@ void* gui_main(void* arg)
 	double horDeg = 0;
 	guiUtils utils;
 	//double yawDeg = 0;
-	int numFrames = 0;
+	//int numFrames = 0;
 
 #ifdef TRACK_FPS
 	Uint32 startTime = SDL_GetTicks();
@@ -246,7 +245,8 @@ void* gui_main(void* arg)
 					}
 				}
 
-                /******MA Filter*****
+                /******MA Filter*****/
+                //printf("MA filter - Start\n");
                 newLon = 0;
                 newLat = 0;
                 sensorVel = {0};
@@ -256,13 +256,24 @@ void* gui_main(void* arg)
                     sensorVel.c2 += sensorData.velBody.c2;
                     newLat += sensorData.latitudeLongitudeAltitude.c0;
                     newLon += sensorData.latitudeLongitudeAltitude.c1;
-                    }
+                }
                 newLat = newLat/LEN_FILTER;
                 newLon = newLon/LEN_FILTER;
+                sensorVel.c0 = sensorVel.c0/LEN_FILTER;
+                sensorVel.c1 = sensorVel.c1/LEN_FILTER;
+                sensorVel.c2 = sensorVel.c2/LEN_FILTER;
+                if(newLat == 0 || newLon == 0)
+                {
+                    sensorVel = {0};
+                }
+                //printf("MA filter - Cleared\n");
                 //printf("newLat = %f newLon = %f\n",newLat,newLon);
-                ****End filter*****/
+                /****End filter*****/
+                //utils.benchTest(vecLatitude,newLat ,newLon,sensorVel,counter);
 
-                /**** Simulate GPS for debug****/
+
+                /**** Simulate GPS for debug****
+
                 Coordinate dist1(0,0);
                 Coordinate dist2(0,0);
                 counter++;
@@ -503,11 +514,11 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                 }
                 //printf("newLat = %f , newLon = %f\n",newLat , newLon);
-                /*******************************/
+                *******************************/
 
                 //printf("Lat = %f , Lon = %f",newLat,newLon);
 
-				// for demo only. to be connected to the actual values
+				/* for demo only. to be connected to the actual values
 				numFrames++;
 				//RPMint      += RPM_STEP;
 				if(numFrames%10 == 0){
@@ -526,6 +537,7 @@ void* gui_main(void* arg)
 				RPM = RPMint;
 				velocity = velocityInt;
 				gear = gearInt;
+				*/
 
 
 #ifdef TRACK_FPS
@@ -546,7 +558,7 @@ void* gui_main(void* arg)
 				gArtHorzTexture.renderRelToScrn(RELATIVE_PLACE_ARTHORZ_X, RELATIVE_PLACE_ARTHORZ_Y, 0.0+horDeg);
 				gVelocityGradient.renderRelToScrn(RELATIVE_PLACE_VELOCITY_G_X, RELATIVE_PLACE_VELOCITY_G_Y);
 				gNeedleTexture.renderRelToScrnRel2Object(RELATIVE_PLACE_SPEEDOMETER_X, RELATIVE_PLACE_SPEEDOMETER_Y, gVelocityGradient, -50.0+degrees);
-				gCarArrowTexture.renderRelToScrn(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y, utils.VnAngle(vnZero,sensorVel));
+				gCarArrowTexture.renderRelToScrn(RELATIVE_PLACE_ARROW_X,RELATIVE_PLACE_ARROW_Y);
 
 				//txts
 				reloadText();
@@ -554,13 +566,18 @@ void* gui_main(void* arg)
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
 /********************Eden's block************************/
+                //printf("test1\n");
                 newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
+                //if(!gpsSig){continue;}
+                //printf("test2\n");
                 trailPointIdx = utils.isClosedLoop(vecVelocity,vecLatitude,vecLongitude);
                 //This is where the loop starts (Also where it ends)
+                //printf("test3\n");
                 if(trailPointIdx>-1)
                 {
                     //printf("trailPointIndx = %d\n",trailPointIdx);
+                    printf("test4\n");
                     frameDef = !frameDef;//Very questionalble!!!!!!!
                     printf("closedLoopDetected\n");
                     vecVelocity_Prev.clear();
@@ -568,7 +585,26 @@ void* gui_main(void* arg)
                     vecLongitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
+                    ///////////////////////////////////////////////// TODO: move to a decent location
+                    SDL_RWops *latlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lat.log", "w");
+                    SDL_RWops *lonlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lon.log", "w");
+                    char str[BUF_SIZE];
+                    const char* del = "#########\n";
+                    SDL_RWwrite(latlogfile, del, sizeof(char), SDL_strlen(del));
+                    SDL_RWwrite(lonlogfile, del, sizeof(char), SDL_strlen(del));
+                    for(auto it = vecLatitude.begin(); it != vecLatitude.end(); ++it) {
+                        sprintf(str,"%lf\n", *it);
+                        SDL_RWwrite(latlogfile, str, sizeof(char), SDL_strlen(str));
+                    }
+                    for(auto it = vecLongitude.begin(); it != vecLongitude.end(); ++it) {
+                        sprintf(str,"%lf\n", *it);
+                        SDL_RWwrite(lonlogfile, str, sizeof(char), SDL_strlen(str));
+                    }
+                    SDL_RWclose(latlogfile);
+                    SDL_RWclose(lonlogfile);
+                    /////////////////////////////////////////////////
                     //printf("test1\n");
+                    //printf("test5\n");
                     for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
                     {
                         vecVelocity_Prev.push_back(vecVelocity[i]);
@@ -586,14 +622,17 @@ void* gui_main(void* arg)
                     vecLongitude.clear();
                     originalPts.clear();
                     mapPts.clear();
+                    printf("test6\n");
                 }
+                //printf("test7\n");
                 //printf("test3\n");
-                origin.X = originalPts[originalPts.size()-1].X ;
-                origin.Y = originalPts[originalPts.size()-1].Y ;
                 //origin.X=ARROW_POS_X;
                 //origin.Y=ARROW_POS_Y;
+                //printf("test8\n");
                 if(newPointSampled){
                     //printf("test4\n");
+                    origin.X = originalPts[originalPts.size()-1].X ;
+                    origin.Y = originalPts[originalPts.size()-1].Y ;
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
                     deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
                     //Updating map stuff
@@ -605,7 +644,7 @@ void* gui_main(void* arg)
                     utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled);
                     //printf("tes   t8\n");
                 }
-
+                //printf("test9\n");
                 //printf("test10\n");
                 //End here updating
 
@@ -616,17 +655,21 @@ void* gui_main(void* arg)
                 //printf("sizeOfmapPrev = %d\n",mapPts_Prev.size());
                 //printf("sizeOfmap = %d\n",mapPts.size());
                 /*******************/
+                //printf("test10\n");
                 for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
                 {
                     thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
                 }
+                //printf("test11\n");
                 //Draw new Map green
 				for(unsigned int idx = 1; idx < mapPts.size() ; ++idx)
 				{
 					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
+				//printf("test12\n");
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
+				//printf("test13\n");
 			}
 		}
 	}

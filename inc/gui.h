@@ -117,7 +117,7 @@ class guiUtils{
 public:
 	//Delay time
 	void waitFor (unsigned int secs);
-  //Point functions
+    //Point functions
 	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
 	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);
     void gps2linDist(Coordinate& updated_coordinate ,double lat, double lon);
@@ -145,6 +145,10 @@ public:
     bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
     void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
+
+    /***Simulator***/
+    void benchTest(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double& newLat ,double& newLon,VnVector3& sensorVel,int counter);
+
 
 };
 
