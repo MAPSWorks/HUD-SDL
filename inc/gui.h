@@ -118,6 +118,7 @@ public:
 	//Delay time
 	void waitFor (unsigned int secs);
     //Point functions
+    bool gpsSinal(Coordinate co);
 	void rotatePoint(Point& point ,Point& updated_point, Point& origin ,double ang_Deg);
 	void strech(Point& point ,Point& updated_point , Point& origin ,double factor, char xy);
     void gps2linDist(Coordinate& updated_coordinate ,double lat, double lon);
@@ -143,7 +144,7 @@ public:
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
     //High level
     bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
-    void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled);
+    void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled,double angRot);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 
     /***Simulator***/

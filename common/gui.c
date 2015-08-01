@@ -47,6 +47,9 @@ Point origin(0,0);
 bool newPointSampled = false;
 bool gpsSig = false;
 int counter = 0; //for simulation
+double angRot = 0;
+Coordinate prevCo(0,0);
+Coordinate currCo(0,0);
 /**********/
 
 //The window we'll be rendering to
@@ -245,7 +248,7 @@ void* gui_main(void* arg)
 					}
 				}
 
-                /******MA Filter*****/
+                /******MA Filter*****
                 //printf("MA filter - Start\n");
                 newLon = 0;
                 newLat = 0;
@@ -268,11 +271,11 @@ void* gui_main(void* arg)
                 }
                 //printf("MA filter - Cleared\n");
                 //printf("newLat = %f newLon = %f\n",newLat,newLon);
-                /****End filter*****/
-                //utils.benchTest(vecLatitude,newLat ,newLon,sensorVel,counter);
+                ****End filter*****/
+                //utils.benchTest(vecLatitude ,vecLongitude ,newLat ,newLon,sensorVel,counter);
 
 
-                /**** Simulate GPS for debug****
+                /**** Simulate GPS for debug****/
 
                 Coordinate dist1(0,0);
                 Coordinate dist2(0,0);
@@ -385,7 +388,7 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
-                    printf("vecSize = %d\n",vecLatitude.size());
+                    //printf("vecSize = %d\n",vecLatitude.size());
                 }
                 else if(counter<=80){
                     newLat+=0.00001;
@@ -514,7 +517,7 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                 }
                 //printf("newLat = %f , newLon = %f\n",newLat , newLon);
-                *******************************/
+                /*******************************/
 
                 //printf("Lat = %f , Lon = %f",newLat,newLon);
 
@@ -577,7 +580,7 @@ void* gui_main(void* arg)
                 if(trailPointIdx>-1)
                 {
                     //printf("trailPointIndx = %d\n",trailPointIdx);
-                    printf("test4\n");
+                    //printf("test4\n");
                     frameDef = !frameDef;//Very questionalble!!!!!!!
                     printf("closedLoopDetected\n");
                     vecVelocity_Prev.clear();
@@ -622,7 +625,7 @@ void* gui_main(void* arg)
                     vecLongitude.clear();
                     originalPts.clear();
                     mapPts.clear();
-                    printf("test6\n");
+                    //printf("test6\n");
                 }
                 //printf("test7\n");
                 //printf("test3\n");
@@ -635,13 +638,22 @@ void* gui_main(void* arg)
                     origin.Y = originalPts[originalPts.size()-1].Y ;
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
                     deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
+                    utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
+                    utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
+
+                    if(utils.gpsSinal(currCo) && utils.gpsSinal(prevCo) && vecLatitude.size()>1)
+                        angRot = utils.CoordinateAngle(prevCo,currCo);
+                    else
+                        angRot = 0;
+                    printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
+                    printf("angleRot = %f\n",angRot);
                     //Updating map stuff
                     //printf("test5\n");
-                    utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled);
+                    utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled,angRot);
                     //printf("test6\n");
                     utils.gps2frame(vecLatitude_Prev,vecLongitude_Prev,originalPts_Prev,frameDef,frame);
                     //printf("test7\n");
-                    utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled);
+                    utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled,angRot);
                     //printf("tes   t8\n");
                 }
                 //printf("test9\n");
@@ -666,6 +678,9 @@ void* gui_main(void* arg)
 				{
 					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
+
+                //
+                //thickLineRGBA(gRenderer ,1280/2, 720/2 ,1280/2 ,720/2,LINE_THICKNESS ,255,255,255,155);
 				//printf("test12\n");
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
