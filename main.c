@@ -8,10 +8,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-char gps_buf[BUF_SIZE] = { 0 }, sensors_buf[BUF_SIZE] = { 0 }, bt_buf[BUF_SIZE] = { 0 } ,velocity_buf[BUF_SIZE] = { 0 };
 bool globQuitSig = false;
-
-VnDeviceCompositeData sensorData;
 
 void* globQuitSigHandler(void* bt_thread){
 	while(!globQuitSig);
@@ -23,8 +20,8 @@ int main()
 {
 	pthread_t sensors_thread, bt_thread, gui_thread, globQuitSigHandler_thread;
 
-	pthread_create(&sensors_thread,	NULL,	sensors_main,	NULL);
 	pthread_create(&bt_thread,	NULL,	bt_main,	NULL);
+	pthread_create(&sensors_thread,	NULL,	sensors_main,	NULL);
 	pthread_create(&gui_thread,	NULL,	gui_main,	NULL);
 	pthread_create(&globQuitSigHandler_thread,	NULL,	globQuitSigHandler,	&bt_thread);
 

@@ -8,8 +8,10 @@
 #include <iostream>
 #include <vector>
 #include "common.h"
+#include "bluetooth_top.h"
 
-extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
+extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern BT_data bt_data;
 extern VnDeviceCompositeData sensorData;
 extern bool globQuitSig;
 int velocity = 0;
@@ -163,11 +165,8 @@ bool loadMedia()
 
 bool reloadText()
 {
-	int velocityInt = velocity;
-	int gearInt = gear;
-
-	std::string strVelocity = std::to_string(velocityInt);
-	std::string strGear = std::to_string(gearInt);
+	std::string strVelocity = std::to_string(velocity);
+	std::string strGear = std::to_string(gear);
 
 	//Render text
 	return 	gTextVelocity.loadFromRenderedText(strVelocity, VEL_FONT_COLOR,gDigitalFont) &&
@@ -534,7 +533,6 @@ void* gui_main(void* arg)
 				RPMint      %= MAX_RPM;
 				gearInt     %= MAX_GEAR;
 				if(gearInt==0) gearInt=1;
-				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
 
 				// connecting with the global variables
 				RPM = RPMint;
@@ -549,7 +547,13 @@ void* gui_main(void* arg)
 #endif
 
 				horDeg = (double)sensorData.ypr.pitch;
-
+				RPMint = (int)bt_data.rpm;
+				velocityInt = (int)bt_data.velo;
+				velocity = velocityInt;
+				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
+				gearInt = bt_data.gear;
+				gear = gearInt;
+				strGear = std::to_string(gearInt);
 
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0 );	//	background screen color

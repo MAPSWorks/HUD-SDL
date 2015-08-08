@@ -1,9 +1,10 @@
 #include "sensorenv.h"
 #include "common.h"
 
-extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
-extern VnDeviceCompositeData sensorData;
 extern bool globQuitSig;
+
+char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
+VnDeviceCompositeData sensorData;
 
 /* Change the connection settings to your configuration. */
 const char* const COM_PORT = "/dev/ttyUSB0";

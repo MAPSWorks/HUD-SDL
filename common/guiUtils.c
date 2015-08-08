@@ -382,8 +382,8 @@ void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& map
 
 void ypr2screen(VnVector3 ypr,Point scPt)
 {
-     + SCREEN_HEIGHT/2
-     + SCREEN_WIDTH/2
+     //+ SCREEN_HEIGHT/2
+     //+ SCREEN_WIDTH/2
 
 }
 

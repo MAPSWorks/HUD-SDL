@@ -12,15 +12,16 @@
 #include <errno.h>
 #include <wait.h>
 #include <pthread.h>
-#include "common.h"
 
-extern char bt_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern char gps_buf[BUF_SIZE];
+extern BT_data bt_data;
 extern bool globQuitSig;
 
 // BT global variables
 bool connected;
 int client;
 char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
+BT_data bt_data;
 
 void* bt_main(void* arg) {
 	bt_server();
@@ -37,18 +38,42 @@ void* send_messages(void* arg) {
 	return 0;
 }
 
+static void parse_msg(BT_data* m) {
+	char* str = m->str;
+	while(*str && *(str++) != 'r');
+	sscanf(str, "%lf", &m->rpm);
+	while(*str && *(str++) != 'v');
+	sscanf(str, "%lf", &m->velo);
+	while(*str && *(str++) != 'g');
+	sscanf(str, "%d", &m->gear);
+}
+
+static void copy_bt_data(BT_data* to, BT_data* from) {
+	strcpy(to->str, from->str);
+	to->rpm = from->rpm;
+	to->velo = from->velo;
+	to->gear = from->gear;
+}
+
 void* recieve_messages(void* arg) {
 	printf("Rcv msgs thread started\n");
 	while(connected&&!globQuitSig) {
+#ifndef BT_INPUT_FROM_STDIN
 		int bytes_read = read(client, rd_buf, BUF_SIZE);
+#else
+		int bytes_read = scanf("%s", rd_buf);
+#endif
+		rd_buf[BUF_SIZE-1] = '\0';	// to prevent segfault
+		BT_data incoming;
 		if(bytes_read == -1) {
-			sprintf(bt_buf, "Client disconnected");
+			sprintf(bt_data.str, "Client disconnected");
 			connected = 0;
 			return 0;
 		}
 		if(!rd_buf[0] && bytes_read == 16) continue;	//	this is a string that is recieved with every message, should be discarded
-		rd_buf[strlen(rd_buf)-1] = '\0';	//	TODO: just for the presentation on 25/5/15
-		strcpy(bt_buf,rd_buf);
+		strcpy(incoming.str, rd_buf);
+		parse_msg(&incoming);
+		copy_bt_data(&bt_data, &incoming);
 	}
 	return 0;
 }
@@ -96,13 +121,15 @@ int bt_server() {
 		listen(s, 1);
 
 		// accept one connection
-		sprintf(bt_buf, "Waiting for connection");
+		sprintf(bt_data.str, "Waiting for connection");
 
+#ifndef BT_INPUT_FROM_STDIN
 		client = accept(s, (struct sockaddr *)&rem_addr, &opt);
+#endif
 		connected = 1;
 
 		ba2str( &rem_addr.rc_bdaddr, wr_buf );
-		sprintf(bt_buf, "accepted connection from %s", wr_buf);
+		sprintf(bt_data.str, "accepted connection from %s", wr_buf);
 		init_arrays_and_start_threads();
 	}
 
