@@ -14,7 +14,6 @@
 #include <pthread.h>
 
 extern char gps_buf[BUF_SIZE];
-extern BT_data bt_data;
 extern bool globQuitSig;
 
 // BT global variables
@@ -81,7 +80,8 @@ void* recieve_messages(void* arg) {
 int init_arrays_and_start_threads() {
 	printf("Initializing arrays and starting threads\n");
 	// create two threads - one for read and one for write
-	pthread_t outmsg_th, inmsg_th;
+	//pthread_t outmsg_th
+	pthread_t inmsg_th;
 
 	memset(wr_buf, 0, sizeof(wr_buf));
 	memset(rd_buf, 0, sizeof(rd_buf));
