@@ -41,11 +41,11 @@ int main(int argc, char **argv)
 			if( status < 0 ) perror("uh oh");
 		}
 		else while(1) {
-			//recieve message
-			bytes_read = read(s, rd_buf, sizeof(rd_buf));
-			bytes_read < BUF_SIZE ? (rd_buf[bytes_read] = 0) : (rd_buf[BUF_SIZE-1] = 0);	//	terminating character
-			fflush(stdout);
-			printf("%s\n", rd_buf);
+			////recieve message
+			//bytes_read = read(s, rd_buf, sizeof(rd_buf));
+			//bytes_read < BUF_SIZE ? (rd_buf[bytes_read] = 0) : (rd_buf[BUF_SIZE-1] = 0);	//	terminating character
+			//fflush(stdout);
+			//printf("%s\n", rd_buf);
 		}
 	}
 

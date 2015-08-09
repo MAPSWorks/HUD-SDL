@@ -25,7 +25,6 @@ BT_data bt_data;
 
 void* bt_main(void* arg) {
 	bt_server();
-	//bt_client();
 	return 0;
 }
 
@@ -87,12 +86,12 @@ int init_arrays_and_start_threads() {
 	memset(wr_buf, 0, sizeof(wr_buf));
 	memset(rd_buf, 0, sizeof(rd_buf));
 	
-	pthread_create(&outmsg_th,	NULL,	send_messages,		NULL);
+	//pthread_create(&outmsg_th,	NULL,	send_messages,		NULL);
 	pthread_create(&inmsg_th,	NULL,	recieve_messages,	NULL);
 	
 	printf("Threads initialized, waiting for quit sig\n");
 
-	pthread_join(outmsg_th,	NULL);
+	//pthread_join(outmsg_th,	NULL);
 	pthread_join(inmsg_th,	NULL);
 
 	printf("Exitintg init_arrays_and_start_threads\n");
