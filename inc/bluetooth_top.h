@@ -5,7 +5,8 @@
 
 
 #define ALEX_NEXUS5_PHONE "2C:54:CF:78:B4:E0"
-#define BT_DEST_ADDR	 ALEX_NEXUS5_PHONE
+#define BT_DEST_ADDR	ALEX_NEXUS5_PHONE
+#define BT_CHANNEL	6
 
 void* bt_main(void* arg);
 int bt_scan();

@@ -25,6 +25,7 @@ BT_data bt_data;
 
 void* bt_main(void* arg) {
 	bt_server();
+	//bt_client();
 	return 0;
 }
 
@@ -113,7 +114,7 @@ int bt_server() {
 	// local bluetooth adapter
 	loc_addr.rc_family = AF_BLUETOOTH;
 	loc_addr.rc_bdaddr = {{0,0,0,0,0,0}}; 
-	loc_addr.rc_channel = (uint8_t) 1;
+	loc_addr.rc_channel = (uint8_t) BT_CHANNEL;
 	bind(s, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 
 	while(!globQuitSig) {
@@ -150,7 +151,7 @@ int bt_client() {
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) 1;
+	addr.rc_channel = (uint8_t) BT_CHANNEL;
 	str2ba( dest, &addr.rc_bdaddr );
 
 	while(!globQuitSig) {

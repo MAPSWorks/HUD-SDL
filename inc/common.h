@@ -7,10 +7,9 @@
 
 #ifdef 	ALEX_COMP
 #define PROJ_HOME "/home/alex/Workspace/hud_proj/"
-#elif	MAN_HOME
-//	to be passed as an argument to the compiler
-#else
-#define PROJ_HOME "/home/odroid/project/"
+#endif
+#ifndef PROJ_HOME
+#define PROJ_HOME "/home/odroid/HUD_proj/"
 #endif
 
 #endif

@@ -6,7 +6,8 @@
 
 #define BUF_SIZE		1024
 #define ALEX_NEXUS5_ADDR	"2C:54:CF:78:B4:E0"
-#define BT_ADDR			ALEX_NEXUS5_ADDR
+#define ODROID_ADDR		"00:1A:7D:DA:71:13"
+#define BT_ADDR			ODROID_ADDR
 
 int main(int argc, char **argv)
 {
