@@ -4,10 +4,19 @@
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/rfcomm.h>
 
-#define BUF_SIZE		1024
+#define BUF_SIZE		2048
 #define ALEX_NEXUS5_ADDR	"2C:54:CF:78:B4:E0"
+#define FORMULA_BT_ADDR		"98:D3:31:50:1A:BF"
 #define ODROID_ADDR		"00:1A:7D:DA:71:13"
-#define BT_ADDR			ODROID_ADDR
+#define BEN_PHONE_ADDR		"EC:CB:30:D4:93:1C"
+
+#ifndef BT_ADDR
+#define BT_ADDR			FORMULA_BT_ADDR
+#endif
+
+#ifndef	BT_CHANNEL
+#define BT_CHANNEL		1
+#endif
 
 int main(int argc, char **argv)
 {
@@ -21,14 +30,15 @@ int main(int argc, char **argv)
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) 6;	//	XXX the channel is important and should match the server channel! XXX
+	addr.rc_channel = (uint8_t) BT_CHANNEL;	//	XXX the channel is important and should match the server channel! XXX
 	str2ba( dest, &addr.rc_bdaddr );
 
 	// connect to server
 	status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
-	printf("Connection established with: %s\n", dest);
 
 	if( status < 0 ) perror("uh oh");
+
+	printf("Connection established with: %s\n", dest);
 
 	// send a message
 	if( status == 0 ) {
@@ -41,11 +51,11 @@ int main(int argc, char **argv)
 			if( status < 0 ) perror("uh oh");
 		}
 		else while(1) {
-			////recieve message
-			//bytes_read = read(s, rd_buf, sizeof(rd_buf));
-			//bytes_read < BUF_SIZE ? (rd_buf[bytes_read] = 0) : (rd_buf[BUF_SIZE-1] = 0);	//	terminating character
-			//fflush(stdout);
-			//printf("%s\n", rd_buf);
+			//recieve message
+			bytes_read = read(s, rd_buf, sizeof(rd_buf));
+			bytes_read < BUF_SIZE ? (rd_buf[bytes_read] = 0) : (rd_buf[BUF_SIZE-1] = 0);	//	terminating character
+			fflush(stdout);
+			printf("%s\n", rd_buf);
 		}
 	}
 

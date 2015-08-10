@@ -649,8 +649,10 @@ void* gui_main(void* arg)
                         angRot = utils.CoordinateAngle(prevCo,currCo);
                     else
                         angRot = 0;
+/*
                     printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
                     printf("angleRot = %f\n",angRot);
+*/
                     //Updating map stuff
                     //printf("test5\n");
                     utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled,angRot);
