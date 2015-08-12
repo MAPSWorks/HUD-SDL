@@ -24,6 +24,7 @@ int RPM = 0;
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
+double newAlt = 0;
 bool frameDef = false;
 std::vector<double> frame;
 
@@ -35,12 +36,14 @@ std::vector<Point> mapPts;
 std::vector<VnVector3> vecVelocity;
 std::vector<double> vecLatitude;
 std::vector<double> vecLongitude;
+std::vector<double> vecAltitude;
 
 std::vector<Point> originalPts_Prev;
 std::vector<Point> mapPts_Prev;
 std::vector<VnVector3> vecVelocity_Prev;
 std::vector<double> vecLatitude_Prev;
 std::vector<double> vecLongitude_Prev;
+std::vector<double> vecAltitude_Prev;
 int LapCounter=0;
 double LapTime=0;
 int trailPointIdx = -1;
@@ -52,6 +55,7 @@ int counter = 0; //for simulation
 double angRot = 0;
 Coordinate prevCo(0,0);
 Coordinate currCo(0,0);
+std::vector<Point> scrPts;
 /**********/
 
 //The window we'll be rendering to
@@ -573,23 +577,24 @@ void* gui_main(void* arg)
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
 /********************Eden's block************************/
-                //printf("test1\n");
-                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel,frameDef,frame);
+                printf("test1\n");
+                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, vecAltitude, newLat, newLon ,newAlt ,originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
                 //if(!gpsSig){continue;}
-                //printf("test2\n");
+                printf("test2\n");
                 trailPointIdx = utils.isClosedLoop(vecVelocity,vecLatitude,vecLongitude);
                 //This is where the loop starts (Also where it ends)
-                //printf("test3\n");
+                printf("test3\n");
                 if(trailPointIdx>-1)
                 {
                     //printf("trailPointIndx = %d\n",trailPointIdx);
-                    //printf("test4\n");
+                    printf("test4\n");
                     frameDef = !frameDef;//Very questionalble!!!!!!!
                     printf("closedLoopDetected\n");
                     vecVelocity_Prev.clear();
                     vecLatitude_Prev.clear();
                     vecLongitude_Prev.clear();
+                    vecAltitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
                     ///////////////////////////////////////////////// TODO: move to a decent location
@@ -611,46 +616,53 @@ void* gui_main(void* arg)
                     SDL_RWclose(lonlogfile);
                     /////////////////////////////////////////////////
                     //printf("test1\n");
-                    //printf("test5\n");
+                    printf("test5\n");
                     for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
                     {
                         vecVelocity_Prev.push_back(vecVelocity[i]);
                         vecLatitude_Prev.push_back(vecLatitude[i]);
                         vecLongitude_Prev.push_back(vecLongitude[i]);
+                        vecAltitude_Prev.push_back(vecLatitude[i]);
                         originalPts_Prev.push_back(originalPts[i]);
                     }
                     //printf("test2\n");
                     vecVelocity_Prev.push_back(vecVelocity[trailPointIdx]);
                     vecLatitude_Prev.push_back(vecLatitude[trailPointIdx]);
                     vecLongitude_Prev.push_back(vecLongitude[trailPointIdx]);
+                    vecAltitude_Prev.push_back(vecLatitude[trailPointIdx]);
                     originalPts_Prev.push_back(originalPts[trailPointIdx]);
                     vecVelocity.clear();
                     vecLatitude.clear();
                     vecLongitude.clear();
+                    vecLatitude.clear();
                     originalPts.clear();
                     mapPts.clear();
-                    //printf("test6\n");
+                    printf("test6\n");
                 }
-                //printf("test7\n");
+                printf("test7\n");
                 //printf("test3\n");
                 //origin.X=ARROW_POS_X;
                 //origin.Y=ARROW_POS_Y;
-                //printf("test8\n");
+                printf("test8\n");
                 if(newPointSampled){
-                    //printf("test4\n");
+                    printf("test8.1\n");
                     origin.X = originalPts[originalPts.size()-1].X ;
                     origin.Y = originalPts[originalPts.size()-1].Y ;
+                    printf("test8.2\n");
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
                     deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
-                    utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
-                    utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
-
+                    if(vecAltitude.size()>1)
+                    {
+                        utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
+                        utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
+                    }
+                    printf("test8.3\n");
                     if(utils.gpsSinal(currCo) && utils.gpsSinal(prevCo) && vecLatitude.size()>1)
                         angRot = utils.CoordinateAngle(prevCo,currCo);
                     else
                         angRot = 0;
-                    printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
-                    printf("angleRot = %f\n",angRot);
+                    //printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
+                    //printf("angleRot = %f\n",angRot);
                     //Updating map stuff
                     //printf("test5\n");
                     utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled,angRot);
@@ -660,7 +672,7 @@ void* gui_main(void* arg)
                     utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled,angRot);
                     //printf("tes   t8\n");
                 }
-                //printf("test9\n");
+                printf("test9\n");
                 //printf("test10\n");
                 //End here updating
 
@@ -671,12 +683,12 @@ void* gui_main(void* arg)
                 //printf("sizeOfmapPrev = %d\n",mapPts_Prev.size());
                 //printf("sizeOfmap = %d\n",mapPts.size());
                 /*******************/
-                //printf("test10\n");
+                printf("test10\n");
                 for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
                 {
                     thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
                 }
-                //printf("test11\n");
+                printf("test11\n");
                 //Draw new Map green
 				for(unsigned int idx = 1; idx < mapPts.size() ; ++idx)
 				{
@@ -685,10 +697,16 @@ void* gui_main(void* arg)
 
                 //
                 //thickLineRGBA(gRenderer ,1280/2, 720/2 ,1280/2 ,720/2,LINE_THICKNESS ,255,255,255,155);
-				//printf("test12\n");
+				printf("test12\n");
+				printf("ypr = (%f,%f,%f)\n",sensorData.ypr.yaw,sensorData.ypr.pitch,sensorData.ypr.roll);
+				printf("MF!!!!!");
+                //printf("Q = (%f,%f,%f,%f)\n",sensorData.quaternion.w,sensorData.quaternion.x,sensorData.quaternion.y,sensorData.quaternion.z);
+                if(vecLatitude.size()>0)
+                    utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
+
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
-				//printf("test13\n");
+				printf("test13\n");
 			}
 		}
 	}

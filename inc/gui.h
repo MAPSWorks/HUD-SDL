@@ -71,7 +71,10 @@
 #define RELATIVE_PLACE_ARROW_Y 12.0/10
 #define ARROW_POS_X 250
 #define ARROW_POS_Y 175
-
+#define EYE_RELEIF 18 //mm
+#define PHYSICAL_SCREEN_WIDTH 18 //mm
+#define PHYSICAL_SCREEN_HEIGHT 10.125 //mm
+#define PHYSICAL_PIXEL_SIZE 0.0140625 //mm
 //
 #define MAX_SPEED 200
 #define AVG_SPEED 100
@@ -137,18 +140,28 @@ public:
     VnVector3 vnHat(VnVector3 vec);
 
 	//Point sampling
-    bool sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon);
+    bool sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<double>& vecAltitude,double newLat,double newLon,double newAlt);
 	//Map utils
     void normVec(std::vector<Coordinate>& pts ,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
     void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
     //High level
-    bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
+    bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, std::vector<double> vecAltitude ,std::vector<double>& vecLongitude, double newLat, double newLon, double newAlt,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
     void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled,double angRot);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 
     /***Simulator***/
     void benchTest(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double& newLat ,double& newLon,VnVector3& sensorVel,int counter);
+    /***Line of sight functions*****/
+    void ypr2quat(double yaw,double pitch,double roll,std::vector<double>& quaternion);
+    bool vnRotate3D(double angDeg, VnVector3& vecIn, VnVector3& vecOut,char xyz);
+    double quat2AngleAxis(std::vector<double> quaternion , std::vector<double>& axis);
+    void rotate2XY(std::vector<double>& vec2XY, std::vector<double>& normal, Point& scrP);
+    bool setCoordinateToScr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double yaw,double pitch,double roll,Point& scrP);
+    bool isInScr(Point P);
+    void renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitudePrev,std::vector<double>& vecLongitudePrev,std::vector<double>& vecAltitudePrev,double yaw, double pitch, double roll, std::vector<Point>& scrPts);
+
+
 
 
 };

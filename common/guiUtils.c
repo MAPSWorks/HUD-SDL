@@ -10,7 +10,7 @@
 #define VEHICLE_ORIGIN_X 0
 #define VEHICLE_ORIGIN_Y 0
 #define THRESHHOLD_ANGLE 15
-
+#define QUATERNION_SINGULARITY_TH 0.9999999
 //Local includes
 #include "gui.h"
 #include <iostream>
@@ -29,7 +29,7 @@ bool guiUtils::gpsSinal(Coordinate co)
 {
     if(co.X==0 || co.Y==0)
     {
-        printf("No GPS signal");
+        printf("No GPS signal\n");
         return false;
     }
     return true;
@@ -198,14 +198,14 @@ double guiUtils::pointAngle(Point p1 ,Point p2)
 }
 
 
-bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,double newLat,double newLon)
+bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<double>& vecAltitude,double newLat,double newLon,double newAlt)
 {
     //printf("test1\n");
     bool newPointSampled = false;
 	//Case no points samples yet.
     if(newLat == 0 || newLon == 0) {
     //No signal
-    printf("No GPS Signal \n");
+    printf("No GPS Signal\n");
     //gpsSig = false;
     return false;
     }
@@ -215,12 +215,14 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 			vecLatitude.push_back(newLat);
 			vecLongitude.push_back(newLon);
 			vecVelocity.push_back(vel);
+			vecAltitude.push_back(newAlt);
 			newPointSampled = true;
         }
         else{
 
             double prevLat = vecLatitude[vecLatitude.size()-1];
             double prevLon = vecLongitude[vecLongitude.size()-1];
+            double prevAlt = vecAltitude[vecAltitude.size()-1];
             Coordinate prevCoordinate(0,0);
             Coordinate nextCoordinate(0,0);
             Point zero(0,0);
@@ -234,6 +236,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 vecLatitude.push_back(newLat);
                 vecLongitude.push_back(newLon);
                 vecVelocity.push_back(vel);
+                vecAltitude.push_back(newAlt);
                 newPointSampled = true;
 
             }
@@ -242,6 +245,8 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 if(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) {printf("Noise Detected\n");}
                 vecLatitude[vecLatitude.size()-1] = (prevLat + newLat) / 2;
                 vecLongitude[vecLongitude.size()-1] = (prevLon + newLon) / 2;
+                vecAltitude[vecAltitude.size()-1] = (prevAlt + newAlt) / 2;
+
 
                 vecVelocity[vecVelocity.size()-1].c0 = (vel.c0 + vecVelocity[vecVelocity.size()-1].c0) / 2;
                 vecVelocity[vecVelocity.size()-1].c1 = (vel.c1 + vecVelocity[vecVelocity.size()-1].c1) / 2;
@@ -285,9 +290,9 @@ void guiUtils::zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,
 }
 
 
-bool guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude ,std::vector<double>& vecLongitude, double newLat, double newLon,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
+bool guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, std::vector<double> vecAltitude ,std::vector<double>& vecLongitude, double newLat, double newLon, double newAlt,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
 {
-    if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,newLat,newLon))
+    if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,vecAltitude,newLat,newLon,newAlt))
     {
         gps2frame(vecLatitude,vecLongitude,originalPts,frameDef,frame);
         return true;
@@ -380,10 +385,165 @@ void guiUtils::UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& map
 
 /******************Line of sight functions************************/
 
-void ypr2screen(VnVector3 ypr,Point scPt)
+bool guiUtils::vnRotate3D(double angDeg, VnVector3& vecIn, VnVector3& vecOut,char xyz)
 {
-     //+ SCREEN_HEIGHT/2
-     //+ SCREEN_WIDTH/2
+    double theta = PI/180*angDeg;
 
+    vecOut = {0};
+    if(xyz=='x')
+    {//Rx(theta)
+        vecOut.c0 = vecIn.c0;
+        vecOut.c1 = cos(theta)*vecIn.c1 - sin(theta)*vecIn.c2;
+        vecOut.c2 = sin(theta)*vecIn.c1 + cos(theta)*vecIn.c2;
+    }
+    else if(xyz=='y')
+    {//Ry(theta)
+        vecOut.c0 = cos(theta)*vecIn.c0 + sin(theta)*vecIn.c2;
+        vecOut.c1 = vecIn.c1;
+        vecOut.c2 = -sin(theta)*vecIn.c0 + cos(theta)*vecIn.c2;
+    }
+    else if(xyz=='z')
+    {//Rz(theta)
+        vecOut.c0 = cos(theta)*vecIn.c0 - sin(theta)*vecIn.c1;
+        vecOut.c1 = sin(theta)*vecIn.c0 + cos(theta)*vecIn.c1;
+        vecOut.c2 = vecIn.c2;
+    }
+    else
+    {
+        printf("In function vnRotate3D invalid Input to function in at least one argument\n");
+        return false;
+        vecOut = vecIn;
+    }
+    return true;
 }
 
+void guiUtils::ypr2quat(double yaw,double pitch,double roll,std::vector<double>& quaternion)
+{
+     quaternion.clear();
+     //roll and pitch exchaged due to sensor initial orientation
+     double psy = PI/180*yaw;
+     double theta = PI/180*roll;
+     double phy = PI/180*pitch;
+     quaternion.push_back(cos(phy/2)*cos(theta/2)*cos(psy/2)+cos(phy/2)*cos(theta/2)*cos(psy/2));
+     quaternion.push_back(sin(phy/2)*cos(theta/2)*cos(psy/2)-cos(phy/2)*sin(theta/2)*sin(psy/2));
+     quaternion.push_back(cos(phy/2)*sin(theta/2)*cos(psy/2)+sin(phy/2)*cos(theta/2)*sin(psy/2));
+     quaternion.push_back(cos(phy/2)*cos(theta/2)*sin(psy/2)-sin(phy/2)*sin(theta/2)*cos(psy/2));
+}
+
+double guiUtils::quat2AngleAxis(std::vector<double> quaternion , std::vector<double>& axis)
+{
+    axis.clear();
+    double angle = 0;
+    if(quaternion[0]>QUATERNION_SINGULARITY_TH || quaternion[0]<-QUATERNION_SINGULARITY_TH)
+    {
+        axis.push_back(1);
+        axis.push_back(0);
+        axis.push_back(0);
+        printf("In function quat2AngleAxis near singularity\n");
+    }
+    else
+    {
+        angle = acos(quaternion[0]);
+        axis.push_back(quaternion[1]/sin(angle));
+        axis.push_back(quaternion[2]/sin(angle));
+        axis.push_back(quaternion[3]/sin(angle));
+    }
+    return 180/PI*2*angle;
+}
+bool guiUtils::isInScr(Point P)
+{
+    if(P.X >=0 && P.X<=SCREEN_WIDTH && P.Y>=0 && P.Y<=SCREEN_HEIGHT)
+        return true;
+    return false;
+}
+bool guiUtils::setCoordinateToScr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double yaw,double pitch,double roll,Point& scrP)
+{
+    Coordinate R0(0,0);
+    Coordinate RP(0,0);
+    std::vector<double> quaternion;
+    std::vector<double> delR;
+    std::vector<double> projAxisDelR;
+    double scrRotAngDeg = 0;
+    std::vector<double> axis;
+    double projLength;
+    Point zero(0,0);
+
+    ypr2quat(yaw,pitch,roll,quaternion);
+    scrRotAngDeg = quat2AngleAxis(quaternion ,axis);
+    gps2linDist(R0,lat0,lon0);
+    gps2linDist(RP,lat0,lon0);
+    delR.push_back(RP.X-R0.X);
+    delR.push_back(RP.Y-R0.Y);
+    delR.push_back(altP-alt0);
+    //Normalize
+    delR[0] = delR[0]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
+    delR[1] = delR[1]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
+    delR[2] = delR[2]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
+    //Project normal to screen axis
+    projLength = delR[0]*axis[0] + delR[1]*axis[1] + delR[2]*axis[2];
+
+    if(projLength<0){return false;} //Not in screen
+
+    delR[0] = delR[0]/projLength;
+    delR[1] = delR[1]/projLength;
+    delR[2] = delR[2]/projLength;
+
+    projAxisDelR.push_back(delR[0]-axis[0]);
+    projAxisDelR.push_back(delR[1]-axis[1]);
+    projAxisDelR.push_back(delR[2]-axis[2]);
+    //transform to scr coordinates with an origin at the center
+    rotate2XY(projAxisDelR,axis, scrP);
+
+    rotatePoint(scrP,scrP,zero,scrRotAngDeg);
+
+    if(isInScr(scrP))
+    {
+        printf("Point (%d,%d) on Screen\n",scrP.X,scrP.Y);
+        return true;
+    }
+    printf("Point (%d,%d) not on screen\n",scrP.X,scrP.Y);
+    return false;
+}
+
+void guiUtils::rotate2XY(std::vector<double>& vec2XY, std::vector<double>& normal, Point& scrP)
+{
+    VnVector3 vnVec2XY = {vec2XY[0],vec2XY[1],vec2XY[2]};
+    VnVector3 vnVec2XYRotatedZ = {0};
+    VnVector3 vnVec2XYRotatedZY = {0};
+    double theta = 180/PI*atan2(normal[1],normal[0]);
+    double sy = 180/PI*atan2(normal[2],sqrt(normal[0]*normal[0]+normal[1]*normal[1]));
+    vnRotate3D(theta, vnVec2XY, vnVec2XYRotatedZ ,'z');
+    vnRotate3D(sy, vnVec2XYRotatedZ, vnVec2XYRotatedZY ,'y');
+    //Debug
+    VnVector3 vnNormal = {normal[0],normal[1],normal[2]};
+    VnVector3 eZ = {0};
+    VnVector3 eZY = {0};
+    vnRotate3D(theta, vnNormal, eZ ,'z');
+    vnRotate3D(sy, eZ, eZY ,'y');
+    //End denug
+    printf("In function rotate2XY z e must be (0,0,1) e = (%f,%f,%f)\n",eZY.c0,eZY.c1,eZY.c2);
+    printf("In function rotate2XY z component must be 0 Rz = %f\n",vnVec2XYRotatedZY.c2);
+    scrP.X = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c0;
+    scrP.Y = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c1;
+}
+
+void guiUtils::renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitudePrev,std::vector<double>& vecLongitudePrev,std::vector<double>& vecAltitudePrev,double yaw, double pitch, double roll, std::vector<Point>& scrPts)
+{
+    printf("renderTrail2scr - Test1\n");
+    Point scrP(0,0);
+    scrPts.clear();
+    double latP = 0;
+    double lonP = 0;
+    double altP = 0;
+    printf("renderTrail2scr - Test2\n");
+    for(unsigned int i=0 ; i<vecLatitudePrev.size() ; ++i)
+    {
+        printf("renderTrail2scr - Test3\n");
+        latP = vecLatitudePrev[i];
+        lonP = vecLongitudePrev[i];
+        altP = vecAltitudePrev[i];
+        if(setCoordinateToScr(lat0,lon0,alt0,latP,lonP,altP,yaw,pitch,roll,scrP)) //if Point is on screen bool->true
+            scrPts.push_back(scrP);
+    }
+    printf("renderTrail2scr - Test4\n");
+}
