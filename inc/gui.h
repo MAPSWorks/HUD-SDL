@@ -146,7 +146,7 @@ public:
     void gps2frame(std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<Point>& FramePts,bool frameDef,std::vector<double>& frame);
     void zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,double factor,Point origin);
     //High level
-    bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, std::vector<double> vecAltitude ,std::vector<double>& vecLongitude, double newLat, double newLon, double newAlt,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
+    bool buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, std::vector<double>& vecAltitude ,std::vector<double>& vecLongitude, double newLat, double newLon, double newAlt,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame);
     void UpdateMap(std::vector<Point>& originalPts,std::vector<Point>& mapPts,std::vector<VnVector3> vecVelocity,Point origin, Point deltaXY,bool newPointSampled,double angRot);
     int isClosedLoop(std::vector <VnVector3>& vecVelocity,std::vector<double>& vecLatitude,std::vector<double>& vecLongitude);
 

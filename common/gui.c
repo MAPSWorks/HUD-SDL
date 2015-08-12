@@ -597,6 +597,7 @@ void* gui_main(void* arg)
                     vecAltitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
+
                     ///////////////////////////////////////////////// TODO: move to a decent location
                     SDL_RWops *latlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lat.log", "w");
                     SDL_RWops *lonlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lon.log", "w");
@@ -622,19 +623,19 @@ void* gui_main(void* arg)
                         vecVelocity_Prev.push_back(vecVelocity[i]);
                         vecLatitude_Prev.push_back(vecLatitude[i]);
                         vecLongitude_Prev.push_back(vecLongitude[i]);
-                        vecAltitude_Prev.push_back(vecLatitude[i]);
+                        vecAltitude_Prev.push_back(vecAltitude[i]);
                         originalPts_Prev.push_back(originalPts[i]);
                     }
                     //printf("test2\n");
                     vecVelocity_Prev.push_back(vecVelocity[trailPointIdx]);
                     vecLatitude_Prev.push_back(vecLatitude[trailPointIdx]);
                     vecLongitude_Prev.push_back(vecLongitude[trailPointIdx]);
-                    vecAltitude_Prev.push_back(vecLatitude[trailPointIdx]);
+                    vecAltitude_Prev.push_back(vecAltitude[trailPointIdx]);
                     originalPts_Prev.push_back(originalPts[trailPointIdx]);
                     vecVelocity.clear();
                     vecLatitude.clear();
                     vecLongitude.clear();
-                    vecLatitude.clear();
+                    vecAltitude.clear();
                     originalPts.clear();
                     mapPts.clear();
                     printf("test6\n");
@@ -651,11 +652,8 @@ void* gui_main(void* arg)
                     printf("test8.2\n");
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
                     deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
-                    if(vecAltitude.size()>1)
-                    {
-                        utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
-                        utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
-                    }
+                    utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
+                    utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
                     printf("test8.3\n");
                     if(utils.gpsSinal(currCo) && utils.gpsSinal(prevCo) && vecLatitude.size()>1)
                         angRot = utils.CoordinateAngle(prevCo,currCo);
@@ -697,12 +695,12 @@ void* gui_main(void* arg)
 
                 //
                 //thickLineRGBA(gRenderer ,1280/2, 720/2 ,1280/2 ,720/2,LINE_THICKNESS ,255,255,255,155);
-				printf("test12\n");
-				printf("ypr = (%f,%f,%f)\n",sensorData.ypr.yaw,sensorData.ypr.pitch,sensorData.ypr.roll);
-				printf("MF!!!!!");
+				//printf("test12\n");
+				//printf("ypr = (%f,%f,%f)\n",sensorData.ypr.yaw,sensorData.ypr.pitch,sensorData.ypr.roll);
+				//printf("MF!!!!!");
                 //printf("Q = (%f,%f,%f,%f)\n",sensorData.quaternion.w,sensorData.quaternion.x,sensorData.quaternion.y,sensorData.quaternion.z);
-                if(vecLatitude.size()>0)
-                    utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
+                //if(vecLatitude.size()>0)
+                  //  utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
 
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
