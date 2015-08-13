@@ -52,6 +52,8 @@ Point origin(0,0);
 bool newPointSampled = false;
 bool gpsSig = false;
 int counter = 0; //for simulation
+Coordinate dist1(0,0);
+Coordinate dist2(0,0);
 double angRot = 0;
 Coordinate prevCo(0,0);
 Coordinate currCo(0,0);
@@ -250,7 +252,7 @@ void* gui_main(void* arg)
 						globQuitSig = true;
 					}
 				}
-
+                sleep(1);
                 /******MA Filter*****
                 //printf("MA filter - Start\n");
                 newLon = 0;
@@ -280,8 +282,10 @@ void* gui_main(void* arg)
 
                 /**** Simulate GPS for debug****/
 
-                Coordinate dist1(0,0);
-                Coordinate dist2(0,0);
+                dist1.X=0;
+                dist1.Y=0;
+                dist2.Y=0;
+                dist2.X=0;
                 counter++;
                 if(counter<=10){
                     newLat+=0.00002;
@@ -549,7 +553,7 @@ void* gui_main(void* arg)
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
 #endif
-
+                printf("test0\n");
 				horDeg = (double)sensorData.ypr.pitch;
 				RPMint = (int)bt_data.rpm;
 				velocityInt = (int)bt_data.velo;
@@ -578,7 +582,7 @@ void* gui_main(void* arg)
 
 /********************Eden's block************************/
                 printf("test1\n");
-                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, vecAltitude, newLat, newLon ,newAlt ,originalPts, sensorVel,frameDef,frame);
+                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude,/* vecAltitude,*/ newLat, newLon ,/*newAlt ,*/originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
                 //if(!gpsSig){continue;}
                 printf("test2\n");
@@ -594,11 +598,12 @@ void* gui_main(void* arg)
                     vecVelocity_Prev.clear();
                     vecLatitude_Prev.clear();
                     vecLongitude_Prev.clear();
-                    vecAltitude_Prev.clear();
+                    //vecAltitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
 
                     ///////////////////////////////////////////////// TODO: move to a decent location
+                    /*
                     SDL_RWops *latlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lat.log", "w");
                     SDL_RWops *lonlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lon.log", "w");
                     char str[BUF_SIZE];
@@ -616,6 +621,7 @@ void* gui_main(void* arg)
                     SDL_RWclose(latlogfile);
                     SDL_RWclose(lonlogfile);
                     /////////////////////////////////////////////////
+                    */
                     //printf("test1\n");
                     printf("test5\n");
                     for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
@@ -623,19 +629,19 @@ void* gui_main(void* arg)
                         vecVelocity_Prev.push_back(vecVelocity[i]);
                         vecLatitude_Prev.push_back(vecLatitude[i]);
                         vecLongitude_Prev.push_back(vecLongitude[i]);
-                        vecAltitude_Prev.push_back(vecAltitude[i]);
+                        //vecAltitude_Prev.push_back(vecAltitude[i]);
                         originalPts_Prev.push_back(originalPts[i]);
                     }
                     //printf("test2\n");
                     vecVelocity_Prev.push_back(vecVelocity[trailPointIdx]);
                     vecLatitude_Prev.push_back(vecLatitude[trailPointIdx]);
                     vecLongitude_Prev.push_back(vecLongitude[trailPointIdx]);
-                    vecAltitude_Prev.push_back(vecAltitude[trailPointIdx]);
+                    //vecAltitude_Prev.push_back(vecAltitude[trailPointIdx]);
                     originalPts_Prev.push_back(originalPts[trailPointIdx]);
                     vecVelocity.clear();
                     vecLatitude.clear();
                     vecLongitude.clear();
-                    vecAltitude.clear();
+                    //vecAltitude.clear();
                     originalPts.clear();
                     mapPts.clear();
                     printf("test6\n");
@@ -651,14 +657,24 @@ void* gui_main(void* arg)
                     origin.Y = originalPts[originalPts.size()-1].Y ;
                     printf("test8.2\n");
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
-                    deltaXY.Y = ARROW_POS_Y - originalPts[originalPts.size()-1].Y ;
-                    utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
-                    utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
+                    deltaXY.Y = - ARROW_POS_Y + originalPts[originalPts.size()-1].Y ;
                     printf("test8.3\n");
-                    if(utils.gpsSinal(currCo) && utils.gpsSinal(prevCo) && vecLatitude.size()>1)
-                        angRot = utils.CoordinateAngle(prevCo,currCo);
+                    if(vecLatitude.size()>1)
+                    {
+                        utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
+                        utils.gps2linDist(currCo,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1]);
+                        if(utils.gpsSinal(currCo) && utils.gpsSinal(prevCo))
+                        {
+                        angRot = utils.CoordinateAngle(currCo,prevCo);
+                        }
+                    }
                     else
+                    {
                         angRot = 0;
+                    }
+                    //printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
+                    //printf("angleRot = %f\n",angRot);
+
                     //printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
                     //printf("angleRot = %f\n",angRot);
                     //Updating map stuff
@@ -681,6 +697,7 @@ void* gui_main(void* arg)
                 //printf("sizeOfmapPrev = %d\n",mapPts_Prev.size());
                 //printf("sizeOfmap = %d\n",mapPts.size());
                 /*******************/
+
                 printf("test10\n");
                 for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
                 {

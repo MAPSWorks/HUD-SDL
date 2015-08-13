@@ -198,7 +198,7 @@ double guiUtils::pointAngle(Point p1 ,Point p2)
 }
 
 
-bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,std::vector<double>& vecAltitude,double newLat,double newLon,double newAlt)
+bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,/*std::vector<double>& vecAltitude,*/double newLat,double newLon/*,double newAlt*/)
 {
     printf("SampleNewPoint test1\n");
     bool newPointSampled = false;
@@ -215,7 +215,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 			vecLatitude.push_back(newLat);
 			vecLongitude.push_back(newLon);
 			vecVelocity.push_back(vel);
-			vecAltitude.push_back(newAlt);
+			//vecAltitude.push_back(newAlt);
 			newPointSampled = true;
 			printf("SampleNewPoint test3\n");
         }
@@ -224,7 +224,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
             double prevLat = vecLatitude[vecLatitude.size()-1];
             double prevLon = vecLongitude[vecLongitude.size()-1];
             printf("SampleNewPoint test4.1\n");
-            double prevAlt = vecAltitude[vecAltitude.size()-1];
+            //double prevAlt = vecAltitude[vecAltitude.size()-1];
             printf("SampleNewPoint test4.2\n");
             Coordinate prevCoordinate(0,0);
             Coordinate nextCoordinate(0,0);
@@ -240,7 +240,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 vecLatitude.push_back(newLat);
                 vecLongitude.push_back(newLon);
                 vecVelocity.push_back(vel);
-                vecAltitude.push_back(newAlt);
+                //vecAltitude.push_back(newAlt);
                 newPointSampled = true;
 
             }
@@ -249,7 +249,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 if(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) {printf("Noise Detected\n");}
                 vecLatitude[vecLatitude.size()-1] = (prevLat + newLat) / 2;
                 vecLongitude[vecLongitude.size()-1] = (prevLon + newLon) / 2;
-                vecAltitude[vecAltitude.size()-1] = (prevAlt + newAlt) / 2;
+                //vecAltitude[vecAltitude.size()-1] = (prevAlt + newAlt) / 2;
 
 
                 vecVelocity[vecVelocity.size()-1].c0 = (vel.c0 + vecVelocity[vecVelocity.size()-1].c0) / 2;
@@ -295,9 +295,9 @@ void guiUtils::zoomMap(std::vector<Point>& pts ,std::vector<Point>& Updated_pts,
 }
 
 
-bool guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, std::vector<double>& vecAltitude ,std::vector<double>& vecLongitude, double newLat, double newLon, double newAlt,std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
+bool guiUtils::buildMap(std::vector<VnVector3>& vecVelocity,std::vector<double>& vecLatitude, /*std::vector<double>& vecAltitude ,*/std::vector<double>& vecLongitude, double newLat, double newLon, /*double newAlt,*/std::vector<Point>& originalPts,VnVector3 velocity,bool frameDef,std::vector<double>& frame)
 {
-    if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,vecAltitude,newLat,newLon,newAlt))
+    if(sampleNewPoint(vecVelocity,velocity,vecLatitude,vecLongitude,/*vecAltitude,*/newLat,newLon/*,newAlt*/))
     {
         gps2frame(vecLatitude,vecLongitude,originalPts,frameDef,frame);
         return true;

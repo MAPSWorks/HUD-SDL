@@ -23,7 +23,8 @@ char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
 BT_data bt_data;
 
 void* bt_main(void* arg) {
-	bt_server();
+	//bt_server();
+	bt_client();
 	return 0;
 }
 
@@ -62,6 +63,7 @@ void* recieve_messages(void* arg) {
 #else
 		int bytes_read = scanf("%s", rd_buf);
 #endif
+		puts(rd_buf);
 		rd_buf[BUF_SIZE-1] = '\0';	// to prevent segfault
 		BT_data incoming;
 		if(bytes_read == -1) {

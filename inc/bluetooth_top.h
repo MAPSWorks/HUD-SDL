@@ -3,10 +3,17 @@
 
 #include "common.h"
 
-
 #define ALEX_NEXUS5_PHONE "2C:54:CF:78:B4:E0"
-#define BT_DEST_ADDR	ALEX_NEXUS5_PHONE
-#define BT_CHANNEL	6
+#define FORMULA_BT_ADDR	"98:D3:31:50:1A:BF"
+#define BEN_PHONE_ADDR	"EC:CB:30:D4:93:1C"
+
+#ifndef BT_DEST_ADDR
+#define BT_DEST_ADDR	BEN_PHONE_ADDR
+#endif
+
+#ifndef BT_CHANNEL
+#define BT_CHANNEL	5
+#endif
 
 void* bt_main(void* arg);
 int bt_scan();
