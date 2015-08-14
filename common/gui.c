@@ -10,7 +10,6 @@
 #include "common.h"
 #include "bluetooth_top.h"
 
-extern char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE];
 extern BT_data bt_data;
 extern VnDeviceCompositeData sensorData;
 extern bool globQuitSig;
@@ -553,7 +552,9 @@ void* gui_main(void* arg)
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
 #endif
+#ifndef RM_EDENS_PRINTFS
                 printf("test0\n");
+#endif
 				horDeg = (double)sensorData.ypr.pitch;
 				RPMint = (int)bt_data.rpm;
 				velocityInt = (int)bt_data.velo;
@@ -581,20 +582,30 @@ void* gui_main(void* arg)
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
 
 /********************Eden's block************************/
+#ifndef RM_EDENS_PRINTFS
                 printf("test1\n");
+#endif
                 newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude,/* vecAltitude,*/ newLat, newLon ,/*newAlt ,*/originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
                 //if(!gpsSig){continue;}
+#ifndef RM_EDENS_PRINTFS
                 printf("test2\n");
+#endif
                 trailPointIdx = utils.isClosedLoop(vecVelocity,vecLatitude,vecLongitude);
                 //This is where the loop starts (Also where it ends)
+#ifndef RM_EDENS_PRINTFS
                 printf("test3\n");
+#endif
                 if(trailPointIdx>-1)
                 {
                     //printf("trailPointIndx = %d\n",trailPointIdx);
+#ifndef RM_EDENS_PRINTFS
                     printf("test4\n");
+#endif
                     frameDef = !frameDef;//Very questionalble!!!!!!!
+#ifndef RM_EDENS_PRINTFS
                     printf("closedLoopDetected\n");
+#endif
                     vecVelocity_Prev.clear();
                     vecLatitude_Prev.clear();
                     vecLongitude_Prev.clear();
@@ -623,7 +634,9 @@ void* gui_main(void* arg)
                     /////////////////////////////////////////////////
                     */
                     //printf("test1\n");
+#ifndef RM_EDENS_PRINTFS
                     printf("test5\n");
+#endif
                     for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
                     {
                         vecVelocity_Prev.push_back(vecVelocity[i]);
@@ -644,21 +657,33 @@ void* gui_main(void* arg)
                     //vecAltitude.clear();
                     originalPts.clear();
                     mapPts.clear();
+#ifndef RM_EDENS_PRINTFS
                     printf("test6\n");
+#endif
                 }
+#ifndef RM_EDENS_PRINTFS
                 printf("test7\n");
+#endif
                 //printf("test3\n");
                 //origin.X=ARROW_POS_X;
                 //origin.Y=ARROW_POS_Y;
+#ifndef RM_EDENS_PRINTFS
                 printf("test8\n");
+#endif
                 if(newPointSampled){
+#ifndef RM_EDENS_PRINTFS
                     printf("test8.1\n");
+#endif
                     origin.X = originalPts[originalPts.size()-1].X ;
                     origin.Y = originalPts[originalPts.size()-1].Y ;
+#ifndef RM_EDENS_PRINTFS
                     printf("test8.2\n");
+#endif
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
                     deltaXY.Y = - ARROW_POS_Y + originalPts[originalPts.size()-1].Y ;
+#ifndef RM_EDENS_PRINTFS
                     printf("test8.3\n");
+#endif
                     if(vecLatitude.size()>1)
                     {
                         utils.gps2linDist(prevCo,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLongitude.size()-2]);
@@ -686,7 +711,9 @@ void* gui_main(void* arg)
                     utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled,angRot);
                     //printf("tes   t8\n");
                 }
+#ifndef RM_EDENS_PRINTFS
                 printf("test9\n");
+#endif
                 //printf("test10\n");
                 //End here updating
 
@@ -698,12 +725,16 @@ void* gui_main(void* arg)
                 //printf("sizeOfmap = %d\n",mapPts.size());
                 /*******************/
 
+#ifndef RM_EDENS_PRINTFS
                 printf("test10\n");
+#endif
                 for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
                 {
                     thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
                 }
+#ifndef RM_EDENS_PRINTFS
                 printf("test11\n");
+#endif
                 //Draw new Map green
 				for(unsigned int idx = 1; idx < mapPts.size() ; ++idx)
 				{
@@ -721,7 +752,9 @@ void* gui_main(void* arg)
 
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
+#ifndef RM_EDENS_PRINTFS
 				printf("test13\n");
+#endif
 			}
 		}
 	}

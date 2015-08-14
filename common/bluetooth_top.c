@@ -13,18 +13,21 @@
 #include <wait.h>
 #include <pthread.h>
 
-extern char gps_buf[BUF_SIZE];
+extern char gps_buf[BT_BUF_SIZE];
 extern bool globQuitSig;
 
 // BT global variables
 bool connected;
 int client;
-char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
+char wr_buf[BT_BUF_SIZE] = { 0 }, rd_buf[BT_BUF_SIZE] = { 0 };
 BT_data bt_data;
 
 void* bt_main(void* arg) {
 	//bt_server();
 	bt_client();
+#ifdef DYNAMIC_BT_CH
+	for(;;) bt_client();
+#endif
 	return 0;
 }
 
@@ -32,7 +35,7 @@ void* send_messages(void* arg) {
 	printf("Send msgs thread started\n");
 	while(connected&&!globQuitSig) {
 		strcpy(wr_buf,gps_buf);
-		if( write(client, wr_buf, BUF_SIZE) < 0 ) perror("uh oh");
+		if( write(client, wr_buf, BT_BUF_SIZE) < 0 ) perror("uh oh");
 		usleep(BT_REFRESH_RATE);
 	}
 	return 0;
@@ -59,22 +62,25 @@ void* recieve_messages(void* arg) {
 	printf("Rcv msgs thread started\n");
 	while(connected&&!globQuitSig) {
 #ifndef BT_INPUT_FROM_STDIN
-		int bytes_read = read(client, rd_buf, BUF_SIZE);
+		int bytes_read = read(client, rd_buf, sizeof(rd_buf));
 #else
 		int bytes_read = scanf("%s", rd_buf);
 #endif
-		puts(rd_buf);
-		rd_buf[BUF_SIZE-1] = '\0';	// to prevent segfault
-		BT_data incoming;
+		bytes_read < BT_BUF_SIZE ? (rd_buf[bytes_read] = '\0') : (rd_buf[BT_BUF_SIZE-1] = '\0');	//	To prevent segfault
+#ifdef PRINT_INC_BT
+		printf("Transmission received: %s\n",rd_buf);
+#endif
 		if(bytes_read == -1) {
 			sprintf(bt_data.str, "Client disconnected");
 			connected = 0;
 			return 0;
 		}
 		if(!rd_buf[0] && bytes_read == 16) continue;	//	this is a string that is recieved with every message, should be discarded
+		BT_data incoming;
 		strcpy(incoming.str, rd_buf);
 		parse_msg(&incoming);
 		copy_bt_data(&bt_data, &incoming);
+		usleep(BT_REFRESH_RATE);
 	}
 	return 0;
 }
@@ -147,18 +153,27 @@ int bt_client() {
 	char dest[18] = BT_DEST_ADDR;
 
 	// allocate a socket
+	printf("Allocating socket\n");
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	printf("Socket allocated\n");
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
+#ifdef DYNAMIC_BT_CH
+	int ch;
+	printf("Select channel: ");
+	ch = getchar()-'0';
+	printf("Setting up channel: %d\n",ch);
+	addr.rc_channel = (uint8_t) ch;
+#else
 	addr.rc_channel = (uint8_t) BT_CHANNEL;
+#endif
 	str2ba( dest, &addr.rc_bdaddr );
 
 	while(!globQuitSig) {
 		// connect to server
 		printf("Trying to connect to addr: %s\n", dest);
 		status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+		client = s;
 
 		if( !status ) {
 			connected = 1;
@@ -169,6 +184,7 @@ int bt_client() {
 		}
 	}
 
+	printf("Closing socket\n");
 	close(s);
 	return 0;
 }

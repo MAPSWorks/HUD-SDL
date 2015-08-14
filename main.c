@@ -18,7 +18,10 @@ void* globQuitSigHandler(void* bt_thread){
 
 int main()
 {
-	pthread_t sensors_thread, bt_thread, gui_thread, globQuitSigHandler_thread;
+	pthread_t 	globQuitSigHandler_thread;
+	pthread_t	bt_thread;
+	pthread_t	gui_thread;
+	pthread_t	sensors_thread;
 
 	pthread_create(&bt_thread,	NULL,	bt_main,	NULL);
 	pthread_create(&sensors_thread,	NULL,	sensors_main,	NULL);

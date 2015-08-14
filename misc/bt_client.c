@@ -5,17 +5,17 @@
 #include <bluetooth/rfcomm.h>
 
 #define BUF_SIZE		2048
-#define ALEX_NEXUS5_ADDR	"2C:54:CF:78:B4:E0"
+#define ALEX_NEXUS5_PHONE	"2C:54:CF:78:B4:E0"
 #define FORMULA_BT_ADDR		"98:D3:31:50:1A:BF"
 #define ODROID_ADDR		"00:1A:7D:DA:71:13"
 #define BEN_PHONE_ADDR		"EC:CB:30:D4:93:1C"
 
-#ifndef BT_ADDR
-#define BT_ADDR			FORMULA_BT_ADDR
+#ifndef BT_DEST_ADDR
+#define BT_DEST_ADDR		FORMULA_BT_ADDR
 #endif
 
 #ifndef	BT_CHANNEL
-#define BT_CHANNEL		1
+#define BT_CHANNEL		7	//	XXX the channel is important and should match the server channel! XXX
 #endif
 
 int main(int argc, char **argv)
@@ -23,14 +23,14 @@ int main(int argc, char **argv)
 	struct sockaddr_rc addr = { 0 };
 	int s, status, bytes_read;
 	char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
-	char dest[18] = BT_ADDR;
+	char dest[18] = BT_DEST_ADDR;
 	pid_t pid = 0;
 	// allocate a socket
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) BT_CHANNEL;	//	XXX the channel is important and should match the server channel! XXX
+	addr.rc_channel = (uint8_t) BT_CHANNEL;
 	str2ba( dest, &addr.rc_bdaddr );
 
 	// connect to server

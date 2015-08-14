@@ -3,7 +3,7 @@
 
 extern bool globQuitSig;
 
-char sensors_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
+char sensors_buf[SENS_BUF_SIZE], gps_buf[SENS_BUF_SIZE] ,velocity_buf[SENS_BUF_SIZE];
 VnDeviceCompositeData sensorData;
 
 /* Change the connection settings to your configuration. */

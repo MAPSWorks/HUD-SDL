@@ -200,7 +200,9 @@ double guiUtils::pointAngle(Point p1 ,Point p2)
 
 bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel, std::vector<double>& vecLatitude,std::vector<double>& vecLongitude,/*std::vector<double>& vecAltitude,*/double newLat,double newLon/*,double newAlt*/)
 {
+#ifndef RM_EDENS_PRINTFS
     printf("SampleNewPoint test1\n");
+#endif
     bool newPointSampled = false;
 	//Case no points samples yet.
     if(newLat == 0 || newLon == 0) {
@@ -208,7 +210,9 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
     printf("No GPS Signal\n");
     //gpsSig = false;
     return false;
+#ifndef RM_EDENS_PRINTFS
     printf("SampleNewPoint test2\n");
+#endif
     }
 	else{
         if(vecLatitude.size()==0){
@@ -217,15 +221,23 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 			vecVelocity.push_back(vel);
 			//vecAltitude.push_back(newAlt);
 			newPointSampled = true;
+#ifndef RM_EDENS_PRINTFS
 			printf("SampleNewPoint test3\n");
+#endif
         }
         else{
+#ifndef RM_EDENS_PRINTFS
             printf("SampleNewPoint test4\n");
+#endif
             double prevLat = vecLatitude[vecLatitude.size()-1];
             double prevLon = vecLongitude[vecLongitude.size()-1];
+#ifndef RM_EDENS_PRINTFS
             printf("SampleNewPoint test4.1\n");
+#endif
             //double prevAlt = vecAltitude[vecAltitude.size()-1];
+#ifndef RM_EDENS_PRINTFS
             printf("SampleNewPoint test4.2\n");
+#endif
             Coordinate prevCoordinate(0,0);
             Coordinate nextCoordinate(0,0);
             Point zero(0,0);
@@ -233,10 +245,14 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
             gps2linDist(prevCoordinate ,prevLat, prevLon);
             gps2linDist(nextCoordinate ,newLat, newLon);
 
+#ifndef RM_EDENS_PRINTFS
             printf("SampleNewPoint test5\n");
+#endif
             if(!(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) && !(inNeighbourhood(prevCoordinate, nextCoordinate, SAMPLE_RADIUS)))
             {
+#ifndef RM_EDENS_PRINTFS
                 printf("SampleNewPoint test6\n");
+#endif
                 vecLatitude.push_back(newLat);
                 vecLongitude.push_back(newLon);
                 vecVelocity.push_back(vel);
@@ -245,7 +261,9 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 
             }
             else{
+#ifndef RM_EDENS_PRINTFS
                 printf("SampleNewPoint test7\n");
+#endif
                 if(isNoiseSample(prevCoordinate, nextCoordinate, NOISE_RADIUS)) {printf("Noise Detected\n");}
                 vecLatitude[vecLatitude.size()-1] = (prevLat + newLat) / 2;
                 vecLongitude[vecLongitude.size()-1] = (prevLon + newLon) / 2;
@@ -256,11 +274,15 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
                 vecVelocity[vecVelocity.size()-1].c1 = (vel.c1 + vecVelocity[vecVelocity.size()-1].c1) / 2;
                 vecVelocity[vecVelocity.size()-1].c2 = (vel.c2 + vecVelocity[vecVelocity.size()-1].c2) / 2;
                 newPointSampled = false;
+#ifndef RM_EDENS_PRINTFS
                 printf("SampleNewPoint test8\n");
+#endif
             }
 		}
 	}
+#ifndef RM_EDENS_PRINTFS
 	printf("SampleNewPoint test9\n");
+#endif
 	return newPointSampled;
 }
 
