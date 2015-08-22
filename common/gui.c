@@ -22,6 +22,7 @@ int RPM = 0;
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
+double newAlt;
 bool frameDef = false;
 std::vector<double> frame;
 
@@ -33,12 +34,14 @@ std::vector<Point> mapPts;
 std::vector<VnVector3> vecVelocity;
 std::vector<double> vecLatitude;
 std::vector<double> vecLongitude;
+std::vector<double> vecAltitude;
 
 std::vector<Point> originalPts_Prev;
 std::vector<Point> mapPts_Prev;
 std::vector<VnVector3> vecVelocity_Prev;
 std::vector<double> vecLatitude_Prev;
 std::vector<double> vecLongitude_Prev;
+std::vector<double> vecAltitude_Prev;
 int LapCounter=0;
 double LapTime=0;
 int trailPointIdx = -1;
@@ -258,9 +261,11 @@ void* gui_main(void* arg)
                     sensorVel.c2 += sensorData.velBody.c2;
                     newLat += sensorData.latitudeLongitudeAltitude.c0;
                     newLon += sensorData.latitudeLongitudeAltitude.c1;
+                    newAlt += sensorData.latitudeLongitudeAltitude.c2;
                 }
                 newLat = newLat/LEN_FILTER;
                 newLon = newLon/LEN_FILTER;
+                newAlt = newAlt/LEN_FILTER;
                 sensorVel.c0 = sensorVel.c0/LEN_FILTER;
                 sensorVel.c1 = sensorVel.c1/LEN_FILTER;
                 sensorVel.c2 = sensorVel.c2/LEN_FILTER;
@@ -269,7 +274,7 @@ void* gui_main(void* arg)
                     sensorVel = {0};
                 }
                 //printf("MA filter - Cleared\n");
-                //printf("newLat = %f newLon = %f\n",newLat,newLon);
+                //printf("newLat = %f newLon = %f newAlt = %f\n",newLat,newLon,newAlt);
                 ****End filter*****/
                 //utils.benchTest(vecLatitude ,vecLongitude ,newLat ,newLon,sensorVel,counter);
 
@@ -279,6 +284,7 @@ void* gui_main(void* arg)
                 Coordinate dist1(0,0);
                 Coordinate dist2(0,0);
                 counter++;
+                newAlt = 0;
                 if(counter<=10){
                     newLat+=0.00002;
                     newLon+=0.00001;
@@ -569,7 +575,7 @@ void* gui_main(void* arg)
 
 /********************Eden's block************************/
                 //printf("test1\n");
-                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, newLat, newLon ,originalPts, sensorVel,frameDef,frame);
+                newPointSampled = utils.buildMap(vecVelocity,vecLatitude ,vecLongitude, vecAltitude, newLat, newLon ,newAlt ,originalPts, sensorVel,frameDef,frame);
                 //utils.UpdateMap(originalPts,originalPts_Old,mapPts,mapPts_Old);
                 //if(!gpsSig){continue;}
                 //printf("test2\n");
@@ -584,6 +590,7 @@ void* gui_main(void* arg)
                     printf("closedLoopDetected\n");
                     vecVelocity_Prev.clear();
                     vecLatitude_Prev.clear();
+                    vecAltitude_Prev.clear();
                     vecLongitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
@@ -614,16 +621,19 @@ void* gui_main(void* arg)
                         vecVelocity_Prev.push_back(vecVelocity[i]);
                         vecLatitude_Prev.push_back(vecLatitude[i]);
                         vecLongitude_Prev.push_back(vecLongitude[i]);
+                        vecAltitude_Prev.push_back(vecAltitude[i]);
                         originalPts_Prev.push_back(originalPts[i]);
                     }
                     //printf("test2\n");
                     vecVelocity_Prev.push_back(vecVelocity[trailPointIdx]);
                     vecLatitude_Prev.push_back(vecLatitude[trailPointIdx]);
                     vecLongitude_Prev.push_back(vecLongitude[trailPointIdx]);
+                    vecAltitude_Prev.push_back(vecAltitude[trailPointIdx]);
                     originalPts_Prev.push_back(originalPts[trailPointIdx]);
                     vecVelocity.clear();
                     vecLatitude.clear();
                     vecLongitude.clear();
+                    vecAltitude.clear();
                     originalPts.clear();
                     mapPts.clear();
                     //printf("test6\n");
@@ -646,8 +656,8 @@ void* gui_main(void* arg)
                         angRot = utils.CoordinateAngle(prevCo,currCo);
                     else
                         angRot = 0;
-                    printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
-                    printf("angleRot = %f\n",angRot);
+                    //printf("prevCo=(%f,%f),currCo = (%f,%f)\n",prevCo.X,prevCo.Y,currCo.X,currCo.Y);
+                    //printf("angleRot = %f\n",angRot);
                     //Updating map stuff
                     //printf("test5\n");
                     utils.UpdateMap(originalPts,mapPts,vecVelocity,origin, deltaXY,newPointSampled,angRot);
