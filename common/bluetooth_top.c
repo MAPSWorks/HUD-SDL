@@ -12,18 +12,22 @@
 #include <errno.h>
 #include <wait.h>
 #include <pthread.h>
-#include "common.h"
 
-extern char bt_buf[BUF_SIZE], gps_buf[BUF_SIZE];
+extern char gps_buf[BT_BUF_SIZE];
 extern bool globQuitSig;
 
 // BT global variables
 bool connected;
 int client;
-char wr_buf[BUF_SIZE] = { 0 }, rd_buf[BUF_SIZE] = { 0 };
+char wr_buf[BT_BUF_SIZE] = { 0 }, rd_buf[BT_BUF_SIZE] = { 0 };
+BT_data bt_data;
 
 void* bt_main(void* arg) {
-	bt_server();
+	//bt_server();
+	bt_client();
+#ifdef DYNAMIC_BT_CH
+	for(;;) bt_client();
+#endif
 	return 0;
 }
 
@@ -31,24 +35,52 @@ void* send_messages(void* arg) {
 	printf("Send msgs thread started\n");
 	while(connected&&!globQuitSig) {
 		strcpy(wr_buf,gps_buf);
-		if( write(client, wr_buf, BUF_SIZE) < 0 ) perror("uh oh");
+		if( write(client, wr_buf, BT_BUF_SIZE) < 0 ) perror("uh oh");
 		usleep(BT_REFRESH_RATE);
 	}
 	return 0;
 }
 
+static void parse_msg(BT_data* m) {
+	char* str = m->str;
+	while(*str && *(str++) != 'r');
+	sscanf(str, "%lf", &m->rpm);
+	while(*str && *(str++) != 'v');
+	sscanf(str, "%lf", &m->velo);
+	while(*str && *(str++) != 'g');
+	sscanf(str, "%d", &m->gear);
+}
+
+static void copy_bt_data(BT_data* to, BT_data* from) {
+	strcpy(to->str, from->str);
+	to->rpm = from->rpm;
+	to->velo = from->velo;
+	to->gear = from->gear;
+}
+
 void* recieve_messages(void* arg) {
 	printf("Rcv msgs thread started\n");
 	while(connected&&!globQuitSig) {
-		int bytes_read = read(client, rd_buf, BUF_SIZE);
+#ifndef BT_INPUT_FROM_STDIN
+		int bytes_read = read(client, rd_buf, sizeof(rd_buf));
+#else
+		int bytes_read = scanf("%s", rd_buf);
+#endif
+		bytes_read < BT_BUF_SIZE ? (rd_buf[bytes_read] = '\0') : (rd_buf[BT_BUF_SIZE-1] = '\0');	//	To prevent segfault
+#ifdef PRINT_INC_BT
+		printf("Transmission received: %s\n",rd_buf);
+#endif
 		if(bytes_read == -1) {
-			sprintf(bt_buf, "Client disconnected");
+			sprintf(bt_data.str, "Client disconnected");
 			connected = 0;
 			return 0;
 		}
 		if(!rd_buf[0] && bytes_read == 16) continue;	//	this is a string that is recieved with every message, should be discarded
-		rd_buf[strlen(rd_buf)-1] = '\0';	//	TODO: just for the presentation on 25/5/15
-		strcpy(bt_buf,rd_buf);
+		BT_data incoming;
+		strcpy(incoming.str, rd_buf);
+		parse_msg(&incoming);
+		copy_bt_data(&bt_data, &incoming);
+		usleep(BT_REFRESH_RATE);
 	}
 	return 0;
 }
@@ -56,17 +88,18 @@ void* recieve_messages(void* arg) {
 int init_arrays_and_start_threads() {
 	printf("Initializing arrays and starting threads\n");
 	// create two threads - one for read and one for write
-	pthread_t outmsg_th, inmsg_th;
+	//pthread_t outmsg_th
+	pthread_t inmsg_th;
 
 	memset(wr_buf, 0, sizeof(wr_buf));
 	memset(rd_buf, 0, sizeof(rd_buf));
 	
-	pthread_create(&outmsg_th,	NULL,	send_messages,		NULL);
+	//pthread_create(&outmsg_th,	NULL,	send_messages,		NULL);
 	pthread_create(&inmsg_th,	NULL,	recieve_messages,	NULL);
 	
 	printf("Threads initialized, waiting for quit sig\n");
 
-	pthread_join(outmsg_th,	NULL);
+	//pthread_join(outmsg_th,	NULL);
 	pthread_join(inmsg_th,	NULL);
 
 	printf("Exitintg init_arrays_and_start_threads\n");
@@ -88,7 +121,7 @@ int bt_server() {
 	// local bluetooth adapter
 	loc_addr.rc_family = AF_BLUETOOTH;
 	loc_addr.rc_bdaddr = {{0,0,0,0,0,0}}; 
-	loc_addr.rc_channel = (uint8_t) 1;
+	loc_addr.rc_channel = (uint8_t) BT_CHANNEL;
 	bind(s, (struct sockaddr *)&loc_addr, sizeof(loc_addr));
 
 	while(!globQuitSig) {
@@ -96,13 +129,15 @@ int bt_server() {
 		listen(s, 1);
 
 		// accept one connection
-		sprintf(bt_buf, "Waiting for connection");
+		sprintf(bt_data.str, "Waiting for connection");
 
+#ifndef BT_INPUT_FROM_STDIN
 		client = accept(s, (struct sockaddr *)&rem_addr, &opt);
+#endif
 		connected = 1;
 
 		ba2str( &rem_addr.rc_bdaddr, wr_buf );
-		sprintf(bt_buf, "accepted connection from %s", wr_buf);
+		sprintf(bt_data.str, "accepted connection from %s", wr_buf);
 		init_arrays_and_start_threads();
 	}
 
@@ -118,18 +153,27 @@ int bt_client() {
 	char dest[18] = BT_DEST_ADDR;
 
 	// allocate a socket
+	printf("Allocating socket\n");
 	s = socket(AF_BLUETOOTH, SOCK_STREAM, BTPROTO_RFCOMM);
-	printf("Socket allocated\n");
 
 	// set the connection parameters (who to connect to)
 	addr.rc_family = AF_BLUETOOTH;
-	addr.rc_channel = (uint8_t) 1;
+#ifdef DYNAMIC_BT_CH
+	int ch;
+	printf("Select channel: ");
+	ch = getchar()-'0';
+	printf("Setting up channel: %d\n",ch);
+	addr.rc_channel = (uint8_t) ch;
+#else
+	addr.rc_channel = (uint8_t) BT_CHANNEL;
+#endif
 	str2ba( dest, &addr.rc_bdaddr );
 
 	while(!globQuitSig) {
 		// connect to server
 		printf("Trying to connect to addr: %s\n", dest);
 		status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+		client = s;
 
 		if( !status ) {
 			connected = 1;
@@ -140,6 +184,7 @@ int bt_client() {
 		}
 	}
 
+	printf("Closing socket\n");
 	close(s);
 	return 0;
 }

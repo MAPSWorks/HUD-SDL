@@ -8,8 +8,9 @@
 #include <iostream>
 #include <vector>
 #include "common.h"
+#include "bluetooth_top.h"
 
-extern char sensors_buf[BUF_SIZE], bt_buf[BUF_SIZE], gps_buf[BUF_SIZE] ,velocity_buf[BUF_SIZE];
+extern BT_data bt_data;
 extern VnDeviceCompositeData sensorData;
 extern bool globQuitSig;
 int velocity = 0;
@@ -22,7 +23,7 @@ int RPM = 0;
 VnVector3 sensorVel;
 double newLat=32.0;
 double newLon=35.0;
-double newAlt;
+double newAlt = 0;
 bool frameDef = false;
 std::vector<double> frame;
 
@@ -176,11 +177,8 @@ bool loadMedia()
 
 bool reloadText()
 {
-	int velocityInt = velocity;
-	int gearInt = gear;
-
-	std::string strVelocity = std::to_string(velocityInt);
-	std::string strGear = std::to_string(gearInt);
+	std::string strVelocity = std::to_string(velocity);
+	std::string strGear = std::to_string(gear);
 
 	//Render text
 	return 	gTextVelocity.loadFromRenderedText(strVelocity, VEL_FONT_COLOR,gDigitalFont) &&
@@ -310,7 +308,6 @@ void* gui_main(void* arg)
 
                 dist1.X=0;
                 dist1.Y=0;
-                dist2.X=0;
                 dist2.Y=0;
                 counter++;
                 newAlt = 0;
@@ -848,7 +845,6 @@ void* gui_main(void* arg)
 				RPMint      %= MAX_RPM;
 				gearInt     %= MAX_GEAR;
 				if(gearInt==0) gearInt=1;
-				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
 
 				// connecting with the global variables
 				RPM = RPMint;
@@ -861,9 +857,17 @@ void* gui_main(void* arg)
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
 #endif
-
+#ifndef RM_EDENS_PRINTFS
+                printf("test0\n");
+#endif
 				horDeg = (double)sensorData.ypr.pitch;
-
+				RPMint = (int)bt_data.rpm;
+				velocityInt = (int)bt_data.velo;
+				velocity = velocityInt;
+				degrees     = (velocityInt*MAX_DEGREE)/MAX_VELOCITY + DEGREES_OFFSET;
+				gearInt = bt_data.gear;
+				gear = gearInt;
+				strGear = std::to_string(gearInt);
 
 				//Clear screen
 				SDL_SetRenderDrawColor( gRenderer, 0, 0, 0, 0 );	//	background screen color
@@ -903,8 +907,9 @@ void* gui_main(void* arg)
                     vecLongitude_Prev.clear();
                     originalPts_Prev.clear();
                     mapPts_Prev.clear();
-                    /*
+
                     ///////////////////////////////////////////////// TODO: move to a decent location
+                    /*
                     SDL_RWops *latlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lat.log", "w");
                     SDL_RWops *lonlogfile = SDL_RWFromFile(PROJ_HOME "/misc/data_logs/lon.log", "w");
                     char str[BUF_SIZE];
@@ -945,15 +950,11 @@ void* gui_main(void* arg)
                     vecAltitude.clear();
                     originalPts.clear();
                     mapPts.clear();
-                    //printf("test6\n");
                 }
-                //printf("test7\n");
                 //printf("test3\n");
                 //origin.X=ARROW_POS_X;
                 //origin.Y=ARROW_POS_Y;
-                //printf("test8\n");
                 if(newPointSampled){
-                    //printf("test4\n");
                     origin.X = originalPts[originalPts.size()-1].X ;
                     origin.Y = originalPts[originalPts.size()-1].Y ;
                     deltaXY.X = ARROW_POS_X - originalPts[originalPts.size()-1].X ;
@@ -976,7 +977,6 @@ void* gui_main(void* arg)
                     utils.UpdateMap(originalPts_Prev,mapPts_Prev,vecVelocity,origin, deltaXY,newPointSampled,angRot);
                     //printf("tes   t8\n");
                 }
-                //printf("test9\n");
                 //printf("test10\n");
                 //End here updating
 
@@ -989,17 +989,16 @@ void* gui_main(void* arg)
                 /*******************/
                 //printf("test10\n");
                 if(vecAltitude.size()>1){
-                for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
-                {
-                    thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
-                }
-                }
-                //printf("test11\n");
-                //Draw new Map green
+                		for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
+                		{
+                		    thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
+                		}
+                		//Draw new Map green
 				for(unsigned int idx = 1; idx < mapPts.size() ; ++idx)
 				{
 					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
+		}
 				//if(vecAltitude_Prev.size()>0 && vecAltitude.size()>0){
                  //   utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,yaw, pitch, roll, scrPts);
                   //  for(unsigned int idx = 1; idx<scrPts.size() ; ++idx)
@@ -1011,13 +1010,14 @@ void* gui_main(void* arg)
                 //
                 //thickLineRGBA(gRenderer ,1280/2, 720/2 ,1280/2 ,720/2,LINE_THICKNESS ,255,255,255,155);
 				//printf("test12\n");
-                //utils.ypr2quat(yaw,pitch,roll,quaternion);
-                //printf("quat = (%f,%f,%f,%f)\n",quaternion[0],quaternion[1],quaternion[2],quaternion[3]);
-                //scrRotAng = utils.quat2AngleAxis(quaternion,axis);
-                //printf("ang = %f , axis = (%f,%f,%f)\n",scrRotAng,axis[0],axis[1],axis[2]);
+				//printf("ypr = (%f,%f,%f)\n",sensorData.ypr.yaw,sensorData.ypr.pitch,sensorData.ypr.roll);
+				//printf("MF!!!!!");
+                //printf("Q = (%f,%f,%f,%f)\n",sensorData.quaternion.w,sensorData.quaternion.x,sensorData.quaternion.y,sensorData.quaternion.z);
+                //if(vecLatitude.size()>0)
+                  //  utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
+
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
-				//printf("test13\n");
 			}
 		}
 	}

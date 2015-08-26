@@ -4,14 +4,15 @@ let s:cpo_save=&cpo
 set cpo&vim
 map! <S-Insert> <MiddleMouse>
 nmap gx <Plug>NetrwBrowseX
-nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)
 map <S-Insert> <MiddleMouse>
+nnoremap <silent> <Plug>NetrwBrowseX :call netrw#NetrwBrowseX(expand("<cWORD>"),0)
 let &cpo=s:cpo_save
 unlet s:cpo_save
 set backspace=indent,eol,start
 set fileencodings=ucs-bom,utf-8,default,latin1
 set helplang=en
 set history=50
+set imsearch=0
 set nomodeline
 set mouse=a
 set printoptions=paper:letter
@@ -19,27 +20,28 @@ set ruler
 set runtimepath=~/.vim,/var/lib/vim/addons,/usr/share/vim/vimfiles,/usr/share/vim/vim74,/usr/share/vim/vimfiles/after,/var/lib/vim/addons/after,~/.vim/after
 set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc
 set termencoding=utf-8
-set window=55
 let s:so_save = &so | let s:siso_save = &siso | set so=0 siso=0
 let v:this_session=expand("<sfile>:p")
 silent only
-cd /home/odroid/project
+cd ~/Workspace/hud_proj
 if expand('%') == '' && !&modified && line('$') <= 1 && getline(1) == ''
   let s:wipebuf = bufnr('%')
 endif
 set shortmess=aoO
 badd +1 common/LTexture.c
-badd +248 common/gui.c
+badd +13 common/gui.c
 badd +24 inc/gui.h
 badd +1 inc/vn_common.h
 badd +260 inc/vndevice.h
-badd +58 common/sensorenv.c
+badd +1 common/sensorenv.c
 badd +1 main.c
-badd +7 inc/sensorenv.h
-badd +8 inc/common.h
-badd +0 common/bluetooth_top.c
+badd +12 inc/sensorenv.h
+badd +4 inc/common.h
+badd +22 common/bluetooth_top.c
+badd +1 makefile
+badd +26 inc/bluetooth_top.h
 args common/LTexture.c
-edit inc/common.h
+edit common/sensorenv.c
 set splitbelow splitright
 wincmd _ | wincmd |
 vsplit
@@ -49,8 +51,8 @@ set nosplitbelow
 set nosplitright
 wincmd t
 set winheight=1 winwidth=1
-exe 'vert 1resize ' . ((&columns * 118 + 117) / 235)
-exe 'vert 2resize ' . ((&columns * 116 + 117) / 235)
+exe 'vert 1resize ' . ((&columns * 99 + 98) / 197)
+exe 'vert 2resize ' . ((&columns * 97 + 98) / 197)
 argglobal
 setlocal keymap=
 setlocal noarabic
@@ -82,8 +84,8 @@ setlocal nodiff
 setlocal equalprg=
 setlocal errorformat=
 setlocal noexpandtab
-if &filetype != 'cpp'
-setlocal filetype=cpp
+if &filetype != 'c'
+setlocal filetype=c
 endif
 setlocal foldcolumn=0
 setlocal foldenable
@@ -100,7 +102,7 @@ setlocal formatoptions=tcq
 setlocal formatlistpat=^\\s*\\d\\+[\\]:.)}\\t\ ]\\s*
 setlocal grepprg=
 setlocal iminsert=2
-setlocal imsearch=2
+setlocal imsearch=0
 setlocal include=
 setlocal includeexpr=
 setlocal indentexpr=
@@ -140,8 +142,8 @@ setlocal statusline=
 setlocal suffixesadd=
 setlocal swapfile
 setlocal synmaxcol=3000
-if &syntax != 'cpp'
-setlocal syntax=cpp
+if &syntax != 'c'
+setlocal syntax=c
 endif
 setlocal tabstop=8
 setlocal tags=
@@ -154,12 +156,12 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 4 - ((3 * winheight(0) + 27) / 54)
+let s:l = 6 - ((5 * winheight(0) + 19) / 39)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-4
-normal! 011|
+6
+normal! 083|
 wincmd w
 argglobal
 edit common/bluetooth_top.c
@@ -265,16 +267,16 @@ set nowrap
 setlocal nowrap
 setlocal wrapmargin=0
 silent! normal! zE
-let s:l = 97 - ((53 * winheight(0) + 27) / 54)
+let s:l = 185 - ((33 * winheight(0) + 19) / 39)
 if s:l < 1 | let s:l = 1 | endif
 exe s:l
 normal! zt
-97
-normal! 0
+185
+normal! 09|
 wincmd w
 2wincmd w
-exe 'vert 1resize ' . ((&columns * 118 + 117) / 235)
-exe 'vert 2resize ' . ((&columns * 116 + 117) / 235)
+exe 'vert 1resize ' . ((&columns * 99 + 98) / 197)
+exe 'vert 2resize ' . ((&columns * 97 + 98) / 197)
 tabnext 1
 if exists('s:wipebuf')
   silent exe 'bwipe ' . s:wipebuf

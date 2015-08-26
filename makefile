@@ -31,15 +31,15 @@ O2CLEAN		= $(OBJS) $(MAIN) $(BIN) $(BT_CL_BIN) $(BT_CL)
 default: project
 
 %.o: %.c $(INCDIR)/*.h
-	$(CC) $(CFLAGS) $(INCS) -c $< -o $@
+	$(CC) $(CFLAGS) $(MYFLAGS) $(INCS) -c $< -o $@
 
 project: $(MAIN) $(OBJS)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BIN)
+	$(CC) $(CFLAGS) $(MYFLAGS) $^ $(LIBS) -o $(BIN)
 
 bt_client: $(BT_CL)
 	@mkdir -p $(BINDIR)
-	$(CC) $(CFLAGS) $^ $(LIBS) -o $(BT_CL_BIN)
+	$(CC) $(CFLAGS) $(MYFLAGS) $^ $(LIBS) -o $(BT_CL_BIN)
 
 clean:
 	-rm -f *.o
