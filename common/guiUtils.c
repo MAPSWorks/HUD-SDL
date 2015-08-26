@@ -1,5 +1,6 @@
 /***** Utilities for gui ****/
-
+//I love Salmon!! It's fucking amazing full of protein, low fat and tastes like heaven!!!
+//I also like a round ass & samll tits (: Yes I do! Home to find them some day..
 
 
 //Local defines
@@ -9,7 +10,7 @@
 #define FILTER_WIDTH 10
 #define VEHICLE_ORIGIN_X 0
 #define VEHICLE_ORIGIN_Y 0
-#define THRESHHOLD_ANGLE 15
+#define THRESHHOLD_ANGLE 18
 #define QUATERNION_SINGULARITY_TH 0.999999
 //Local includes
 #include "gui.h"
@@ -29,7 +30,7 @@ bool guiUtils::gpsSinal(Coordinate co)
 {
     if(co.X==0 || co.Y==0)
     {
-        printf("No GPS signal");
+        //printf("No GPS signal");
         return false;
     }
     return true;
@@ -205,7 +206,7 @@ bool guiUtils::sampleNewPoint(std::vector<VnVector3>& vecVelocity,VnVector3& vel
 	//Case no points samples yet.
     if(newLat == 0 || newLon == 0) {
     //No signal
-    printf("No GPS Signal \n");
+    //printf("No GPS Signal \n");
     //gpsSig = false;
     return false;
     }
@@ -423,7 +424,7 @@ void guiUtils::ypr2quat(double yaw,double pitch,double roll,std::vector<double>&
      double psy = PI/180*yaw;
      double theta = PI/180*roll;
      double phy = PI/180*pitch;
-     quaternion.push_back(cos(phy/2)*cos(theta/2)*cos(psy/2)+cos(phy/2)*cos(theta/2)*cos(psy/2));
+     quaternion.push_back(cos(phy/2)*cos(theta/2)*cos(psy/2)+sin(phy/2)*sin(theta/2)*sin(psy/2));
      quaternion.push_back(sin(phy/2)*cos(theta/2)*cos(psy/2)-cos(phy/2)*sin(theta/2)*sin(psy/2));
      quaternion.push_back(cos(phy/2)*sin(theta/2)*cos(psy/2)+sin(phy/2)*cos(theta/2)*sin(psy/2));
      quaternion.push_back(cos(phy/2)*cos(theta/2)*sin(psy/2)-sin(phy/2)*sin(theta/2)*cos(psy/2));
@@ -467,17 +468,23 @@ bool guiUtils::setCoordinateToScr(double lat0,double lon0,double alt0,double lat
     double projLength;
     Point zero(0,0);
 
-    ypr2quat(yaw,pitch,roll,quaternion);
+    ypr2quat(-yaw,-pitch,-roll,quaternion);
     scrRotAngDeg = quat2AngleAxis(quaternion ,axis);
     gps2linDist(R0,lat0,lon0);
-    gps2linDist(RP,lat0,lon0);
+    gps2linDist(RP,latP,lonP);
     delR.push_back(RP.X-R0.X);
     delR.push_back(RP.Y-R0.Y);
     delR.push_back(altP-alt0);
     //Normalize
-    delR[0] = delR[0]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
-    delR[1] = delR[1]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
-    delR[2] = delR[2]/sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
+    double normR = sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2]);
+    if(normR == 0) {
+    printf("in function guiUtils::setCoordinateToScr error normR==0\n");
+    //printf("in function guiUtils::setCoordinateToScr error normR==0\n");
+    return false;
+    }
+    delR[0] = delR[0]/normR;
+    delR[1] = delR[1]/normR;
+    delR[2] = delR[2]/normR;
     //Project normal to screen axis
     projLength = delR[0]*axis[0] + delR[1]*axis[1] + delR[2]*axis[2];
 
@@ -510,39 +517,75 @@ void guiUtils::rotate2XY(std::vector<double>& vec2XY, std::vector<double>& norma
     VnVector3 vnVec2XYRotatedZ = {0};
     VnVector3 vnVec2XYRotatedZY = {0};
     double theta = 180/PI*atan2(normal[1],normal[0]);
-    double sy = 180/PI*atan2(normal[2],sqrt(normal[0]*normal[0]+normal[1]*normal[1]));
-    vnRotate3D(theta, vnVec2XY, vnVec2XYRotatedZ ,'z');
-    vnRotate3D(sy, vnVec2XYRotatedZ, vnVec2XYRotatedZY ,'y');
+    double Psy = 180/PI*atan2(normal[2],sqrt(normal[0]*normal[0]+normal[1]*normal[1]));
+    vnRotate3D(theta, vnVec2XY, vnVec2XYRotatedZ ,'y');
+    vnRotate3D(Psy, vnVec2XYRotatedZ, vnVec2XYRotatedZY ,'z');
+    printf("normal = (%f,%f,%f)\n",normal[0],normal[1],normal[2]);
     //Debug
     VnVector3 vnNormal = {normal[0],normal[1],normal[2]};
     VnVector3 eZ = {0};
     VnVector3 eZY = {0};
     vnRotate3D(theta, vnNormal, eZ ,'z');
-    vnRotate3D(sy, eZ, eZY ,'y');
+    vnRotate3D(Psy, eZ, eZY ,'y');
     //End denug
     printf("In function rotate2XY z e must be (0,0,1) e = (%f,%f,%f)\n",eZY.c0,eZY.c1,eZY.c2);
     printf("In function rotate2XY z component must be 0 Rz = %f\n",vnVec2XYRotatedZY.c2);
-    scrP.X = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c0;
-    scrP.Y = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c1;
+    scrP.X = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c1;
+    scrP.Y = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*vnVec2XYRotatedZY.c2;
+    printf("vnVector2XYRotatedZY = (%f,%f,%f)\n",vnVec2XYRotatedZY.c0,vnVec2XYRotatedZY.c1,vnVec2XYRotatedZY.c2);
+    printf("vnVector2XY = (%f,%f,%f)\n",vnVec2XY.c0,vnVec2XY.c1,vnVec2XY.c2);
+
 }
 
-void guiUtils::renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitudePrev,std::vector<double>& vecLongitudePrev,std::vector<double>& vecAltitudePrev,double yaw, double pitch, double roll, std::vector<Point>& scrPts)
+void guiUtils::renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev,std::vector<double>& vecAltitude_Prev,double yaw, double pitch, double roll, std::vector<Point>& scrPts)
 {
-    printf("renderTrail2scr - Test1\n");
+    //printf("renderTrail2scr - Test1\n");
     Point scrP(0,0);
     scrPts.clear();
     double latP = 0;
     double lonP = 0;
     double altP = 0;
-    printf("renderTrail2scr - Test2\n");
-    for(unsigned int i=0 ; i<vecLatitudePrev.size() ; ++i)
+    //printf("renderTrail2scr - Test2\n");
+    for(unsigned int i=0 ; i<vecLatitude_Prev.size() ; ++i)
     {
-        printf("renderTrail2scr - Test3\n");
-        latP = vecLatitudePrev[i];
-        lonP = vecLongitudePrev[i];
-        altP = vecAltitudePrev[i];
-        if(setCoordinateToScr(lat0,lon0,alt0,latP,lonP,altP,yaw,pitch,roll,scrP)) //if Point is on screen bool->true
+        //printf("renderTrail2scr - Test3\n");
+        latP = vecLatitude_Prev[i];
+        lonP = vecLongitude_Prev[i];
+        altP = vecAltitude_Prev[i];
+        if(coordinate2Scr(lat0,lon0,alt0,latP,lonP,altP,yaw,roll,pitch,scrP)&&isInScr(scrP)) //if Point is on screen bool->true
             scrPts.push_back(scrP);
     }
-    printf("renderTrail2scr - Test4\n");
+    //printf("renderTrail2scr - Test4\n");
 }
+
+
+
+void guiUtils::getPitchYawFromVec(std::vector<double>& vec, double& pitch,double& yaw)
+{
+    yaw = atan2(vec[0],-vec[1]);
+    pitch = -atan2(sqrt(vec[0]*vec[0]+vec[1]*vec[1]),vec[2]);
+}
+
+bool guiUtils::coordinate2Scr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double pitch,double yaw,double roll,Point& scrP)
+{
+    Coordinate R0(0,0);
+    Coordinate RP(0,0);
+    Point origin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
+    double Rpitch;
+    double Ryaw;
+    std::vector<double> delR;
+    gps2linDist(R0,lat0,lon0);
+    gps2linDist(RP,latP,lonP);
+    delR.push_back(RP.X-R0.X);
+    delR.push_back(RP.Y-R0.Y);
+    delR.push_back(altP-alt0);
+    if(sqrt(delR[0]*delR[0]+delR[1]*delR[1]+delR[2]*delR[2])==0) {return false;}
+    getPitchYawFromVec(delR,Rpitch,Ryaw);
+    scrP.Y = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch - PI/180*pitch);
+    scrP.X = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Ryaw - PI/180*yaw);
+    rotatePoint(scrP,scrP,origin,-roll);
+    //Special cases: delR=0 or point not on screen
+    return true;
+}
+
+

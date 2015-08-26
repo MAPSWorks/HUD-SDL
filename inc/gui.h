@@ -161,6 +161,9 @@ public:
     void rotate2XY(std::vector<double>& vec2XY, std::vector<double>& normal, Point& scrP);
     void renderTrail2scr(double lat0,double lon0,double alt0 ,std::vector<double>& vecLatitudePrev,std::vector<double>& vecLongitudePrev,std::vector<double>& vecAltitudePrev,double yaw, double pitch, double roll, std::vector<Point>& scrPts);
     bool isInScr(Point P);
+    void getPitchYawFromVec(std::vector<double>& vec, double& pitch,double& yaw);
+    bool coordinate2Scr(double lat0,double lon0,double alt0,double latP,double lonP,double altP,double pitch,double yaw,double roll,Point& scrP);
+
 
 };
 

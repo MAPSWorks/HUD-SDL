@@ -1,7 +1,7 @@
 /*This source code copyrighted by Lazy Foo' Productions (2004-2015)
   and may not be redistributed without written permission.*/
 
-//Using SDL, SDL_image, SDL_ttf, standard IO, math, and strings
+///Using SDL, SDL_image, SDL_ttf, standard IO, math, and strings
 #include "gui.h"
 #include "sensorenv.h"
 #include <time.h>
@@ -17,7 +17,7 @@ int gear = 0;
 int RPM = 0;
 
 
-/***Eden's Block**/
+///Eden's Block
 
 VnVector3 sensorVel;
 double newLat=32.0;
@@ -50,10 +50,20 @@ Point origin(0,0);
 bool newPointSampled = false;
 bool gpsSig = false;
 int counter = 0; //for simulation
+std::vector<double> quaternion;
+std::vector<double> axis;
+double scrRotAng = 0;
 double angRot = 0;
 Coordinate prevCo(0,0);
 Coordinate currCo(0,0);
-/**********/
+Coordinate dist1(0,0);
+Coordinate dist2(0,0);
+
+double yaw;
+double pitch;
+double roll;
+std::vector<Point> scrPts;
+///
 
 //The window we'll be rendering to
 SDL_Window* gWindow = NULL;
@@ -254,6 +264,10 @@ void* gui_main(void* arg)
                 //printf("MA filter - Start\n");
                 newLon = 0;
                 newLat = 0;
+                newAlt = 0;
+                pitch = 0;
+                yaw = 0;
+                roll = 0;
                 sensorVel = {0};
                 for(unsigned int j = 0;j<LEN_FILTER; ++j){
                     sensorVel.c0 += sensorData.velBody.c0;
@@ -262,10 +276,16 @@ void* gui_main(void* arg)
                     newLat += sensorData.latitudeLongitudeAltitude.c0;
                     newLon += sensorData.latitudeLongitudeAltitude.c1;
                     newAlt += sensorData.latitudeLongitudeAltitude.c2;
+                    yaw += sensorData.ypr.yaw;
+                    roll += sensorData.ypr.roll;
+                    pitch += sensorData.ypr.pitch;
                 }
                 newLat = newLat/LEN_FILTER;
                 newLon = newLon/LEN_FILTER;
                 newAlt = newAlt/LEN_FILTER;
+                yaw = yaw/LEN_FILTER;
+                pitch = pitch/LEN_FILTER;
+                roll = roll/LEN_FILTER;
                 sensorVel.c0 = sensorVel.c0/LEN_FILTER;
                 sensorVel.c1 = sensorVel.c1/LEN_FILTER;
                 sensorVel.c2 = sensorVel.c2/LEN_FILTER;
@@ -273,21 +293,30 @@ void* gui_main(void* arg)
                 {
                     sensorVel = {0};
                 }
+
                 //printf("MA filter - Cleared\n");
-                //printf("newLat = %f newLon = %f newAlt = %f\n",newLat,newLon,newAlt);
+                if(newLat!=0){
+                printf("newLat = %f newLon = %f newAlt = %f\n",newLat,newLon,newAlt);
+                }
                 ****End filter*****/
                 //utils.benchTest(vecLatitude ,vecLongitude ,newLat ,newLon,sensorVel,counter);
 
 
                 /**** Simulate GPS for debug****/
+                yaw = sensorData.ypr.yaw;
+                roll = sensorData.ypr.roll;
+                pitch = sensorData.ypr.pitch;
 
-                Coordinate dist1(0,0);
-                Coordinate dist2(0,0);
+
+                dist1.X=0;
+                dist1.Y=0;
+                dist2.X=0;
+                dist2.Y=0;
                 counter++;
                 newAlt = 0;
-                if(counter<=10){
-                    newLat+=0.00002;
-                    newLon+=0.00001;
+                if(counter<=100){
+                    newLat = 35+0.001*cos(PI/50*counter);
+                    newLon = 32+0.001*sin(PI/50*counter);
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
                     utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
@@ -300,10 +329,11 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
+                    //printf("1newLat,newLon = (%f,%f)\n",newLat,newLon);
                 }
-                else if(counter<=20){
-                    newLat+=0.00001;
-                    newLon+=0.00002;
+                else if(counter<=200){
+                    newLat = 35 + 0.001*cos(PI-PI/50*counter)+0.002;
+                    newLon = 32 + 0.001*sin(PI-PI/50*counter);
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
                     utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
@@ -316,9 +346,14 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
+                    //printf("2newLat,newLon = (%f,%f)\n",newLat,newLon);
                 }
-                else if(counter<=30){
-                    newLat+=0.00003;
+                if(counter == 200)
+                    counter = 0;
+                /*
+
+                if(counter<=20){
+                    newLat+=0.00002*;
                     newLon+=0.00001;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
@@ -334,26 +369,12 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                 }
                 else if(counter<=40){
-                    newLat+=0.00004;
-                    if(vecLatitude.size()>1){
-                        utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
-                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
-                    sensorVel.c0 = dist1.X-dist2.X;
-                    sensorVel.c1 = dist1.Y-dist2.Y;
-                    }
-                    else
-                    {
-                    sensorVel.c0 = 0;
-                    sensorVel.c1 = 0;
-                    }
-                    sensorVel.c2 = 0;
-                }
-                else if(counter<=50){
-                    newLat-=0.00001;
-                    newLon-=0.00002;
+                      newLat+=0.000018;
+                    newLon+=0.000012;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
-                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);                    sensorVel.c0 = dist1.X-dist2.X;
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
                     sensorVel.c1 = dist1.Y-dist2.Y;
                     }
                     else
@@ -364,8 +385,8 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                 }
                 else if(counter<=60){
-                    newLat-=0.00003;
-                    newLon-=0.00001;
+                      newLat+=0.000016;
+                    newLon+=0.000014;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
                     utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
@@ -378,24 +399,41 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
-                }
-                else if(counter<=70){
-                    newLat-=0.00004;
-                    if(vecLatitude.size()>1){
-                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
-                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
-                    sensorVel.c0 = dist1.X-dist2.X;
-                    sensorVel.c1 = dist1.Y-dist2.Y;
-                    }
-                    else
-                    {
-                    sensorVel.c0 = 0;
-                    sensorVel.c1 = 0;
-                    }
-                    sensorVel.c2 = 0;
-                    //printf("vecSize = %d\n",vecLatitude.size());
                 }
                 else if(counter<=80){
+                      newLat+=0.000014;
+                    newLon+=0.000016;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=100){
+                      newLat+=0.000012;
+                    newLon+=0.000018;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+
+                else if(counter<=120){
                     newLat+=0.00001;
                     newLon+=0.00002;
                     if(vecLatitude.size()>1){
@@ -410,8 +448,137 @@ void* gui_main(void* arg)
                     sensorVel.c1 = 0;
                     }
                     sensorVel.c2 = 0;
+                }
+                else if(counter<=140){
+                    newLat+=0.000014;
+                    newLon+=0.000018;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
                     }
-                else if(counter<=90){
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=160){
+                    newLat+=0.000018;
+                    newLon+=0.000016;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=180){
+                    newLat+=0.000022;
+                    newLon+=0.000014;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=200){
+                    newLat+=0.000026;
+                    newLon+=0.000012;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=220){
+                    newLat+=0.000026;
+                    newLon+=0.000012;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=240){
+                    newLat+=0.000026;
+                    newLon+=0.000012;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=260){
+                    newLat+=0.000026;
+                    newLon+=0.000012;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=280){
+                    newLat+=0.000026;
+                    newLon+=0.000012;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+
+                else if(counter<=300){
                     newLat+=0.00003;
                     newLon+=0.00001;
                     if(vecLatitude.size()>1){
@@ -427,8 +594,9 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=100){
-                    newLat+=0.00004;
+                else if(counter<=300){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
                     utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
@@ -442,13 +610,59 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=110){
+                else if(counter<=300){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=300){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=400){
+                    newLat+=0.00004;
+                    if(vecLatitude.size()>1){
+                        utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=500){
                     newLat-=0.00001;
                     newLon-=0.00002;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
-                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
-                    sensorVel.c0 = dist1.X-dist2.X;
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);                    sensorVel.c0 = dist1.X-dist2.X;
                     sensorVel.c1 = dist1.Y-dist2.Y;
                     }
                     else
@@ -458,7 +672,7 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=120){
+                else if(counter<=600){
                     newLat-=0.00003;
                     newLon-=0.00001;
                     if(vecLatitude.size()>1){
@@ -474,7 +688,102 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=130){
+                else if(counter<=700){
+                    newLat-=0.00004;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                    //printf("vecSize = %d\n",vecLatitude.size());
+                }
+                else if(counter<=800){
+                    newLat+=0.00001;
+                    newLon+=0.00002;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                    }
+                else if(counter<=900){
+                    newLat+=0.00003;
+                    newLon+=0.00001;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=1000){
+                    newLat+=0.00004;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=1100){
+                    newLat-=0.00001;
+                    newLon-=0.00002;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=1200){
+                    newLat-=0.00003;
+                    newLon-=0.00001;
+                    if(vecLatitude.size()>1){
+                    utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
+                    utils.gps2linDist(dist2,vecLatitude[vecLatitude.size()-2],vecLongitude[vecLatitude.size()-2]);
+                    sensorVel.c0 = dist1.X-dist2.X;
+                    sensorVel.c1 = dist1.Y-dist2.Y;
+                    }
+                    else
+                    {
+                    sensorVel.c0 = 0;
+                    sensorVel.c1 = 0;
+                    }
+                    sensorVel.c2 = 0;
+                }
+                else if(counter<=1300){
                     newLat-=0.00004;
                     if(vecLatitude.size()>1){
                     utils.gps2linDist(dist1,vecLatitude[vecLatitude.size()-1],vecLongitude[vecLatitude.size()-1]);
@@ -489,7 +798,7 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=140){
+                else if(counter<=1400){
                     newLat+=0.00001;
                     newLon+=0.00002;
                     if(vecLatitude.size()>1){
@@ -505,7 +814,7 @@ void* gui_main(void* arg)
                     }
                     sensorVel.c2 = 0;
                 }
-                else if(counter<=150){
+                else if(counter<=1500){
                     newLat-=0.00003;
                     newLon+=0.00001;
                     if(vecLatitude.size()>1){
@@ -522,7 +831,7 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                 }
                 //printf("newLat = %f , newLon = %f\n",newLat , newLon);
-                /*******************************/
+                */
 
                 //printf("Lat = %f , Lon = %f",newLat,newLon);
 
@@ -586,7 +895,7 @@ void* gui_main(void* arg)
                 {
                     //printf("trailPointIndx = %d\n",trailPointIdx);
                     //printf("test4\n");
-                    frameDef = !frameDef;//Very questionalble!!!!!!!
+                    frameDef = true;//Very questionalble!!!!!!!
                     printf("closedLoopDetected\n");
                     vecVelocity_Prev.clear();
                     vecLatitude_Prev.clear();
@@ -616,7 +925,7 @@ void* gui_main(void* arg)
                     */
                     //printf("test1\n");
                     //printf("test5\n");
-                    for(unsigned int i=trailPointIdx ; i<vecLatitude.size() ; ++i)
+                    for(unsigned int i=0/*trailPointIdx*/ ; i<vecLatitude.size() ; ++i)
                     {
                         vecVelocity_Prev.push_back(vecVelocity[i]);
                         vecLatitude_Prev.push_back(vecLatitude[i]);
@@ -679,9 +988,11 @@ void* gui_main(void* arg)
                 //printf("sizeOfmap = %d\n",mapPts.size());
                 /*******************/
                 //printf("test10\n");
+                if(vecAltitude.size()>1){
                 for(unsigned int idx = 1; idx < mapPts_Prev.size() ; ++idx)
                 {
                     thickLineRGBA(gRenderer ,mapPts_Prev[idx-1].X ,mapPts_Prev[idx-1].Y ,mapPts_Prev[idx].X ,mapPts_Prev[idx].Y,LINE_THICKNESS ,50,100,255,155);
+                }
                 }
                 //printf("test11\n");
                 //Draw new Map green
@@ -689,10 +1000,21 @@ void* gui_main(void* arg)
 				{
 					thickLineRGBA(gRenderer ,mapPts[idx-1].X ,mapPts[idx-1].Y ,mapPts[idx].X ,mapPts[idx].Y,LINE_THICKNESS ,50,255,50,155);
 				}
-
+				//if(vecAltitude_Prev.size()>0 && vecAltitude.size()>0){
+                 //   utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,yaw, pitch, roll, scrPts);
+                  //  for(unsigned int idx = 1; idx<scrPts.size() ; ++idx)
+                   // {
+                    //    thickLineRGBA(gRenderer ,scrPts[idx-1].X ,scrPts[idx-1].Y ,scrPts[idx].X ,scrPts[idx].Y,LINE_THICKNESS ,50,100,100,155);
+                    //    printf("scrPts = (%d,%d) \n",scrPts[idx-1].X,scrPts[idx-1].Y);
+                    //}
+               // }
                 //
                 //thickLineRGBA(gRenderer ,1280/2, 720/2 ,1280/2 ,720/2,LINE_THICKNESS ,255,255,255,155);
 				//printf("test12\n");
+                //utils.ypr2quat(yaw,pitch,roll,quaternion);
+                //printf("quat = (%f,%f,%f,%f)\n",quaternion[0],quaternion[1],quaternion[2],quaternion[3]);
+                //scrRotAng = utils.quat2AngleAxis(quaternion,axis);
+                //printf("ang = %f , axis = (%f,%f,%f)\n",scrRotAng,axis[0],axis[1],axis[2]);
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
 				//printf("test13\n");
