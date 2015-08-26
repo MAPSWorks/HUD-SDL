@@ -857,9 +857,6 @@ void* gui_main(void* arg)
 				fps = ( numFrames/(float)(SDL_GetTicks() - startTime) )*1000;
 				printf("FPS: %lf\n", fps);
 #endif
-#ifndef RM_EDENS_PRINTFS
-                printf("test0\n");
-#endif
 				horDeg = (double)sensorData.ypr.pitch;
 				RPMint = (int)bt_data.rpm;
 				velocityInt = (int)bt_data.velo;
