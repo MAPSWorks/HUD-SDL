@@ -172,7 +172,8 @@ int bt_client() {
 	while(!globQuitSig) {
 		// connect to server
 		printf("Trying to connect to addr: %s\n", dest);
-		status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
+		status = -1;
+		while(status) status = connect(s, (struct sockaddr *)&addr, sizeof(addr));
 		client = s;
 
 		if( !status ) {
