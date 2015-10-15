@@ -66,7 +66,7 @@
 #define LEN_FILTER 10
 
 //Map Stuff
-#define LINE_THICKNESS 2 //for map
+#define LINE_THICKNESS 1.5 //for map
 #define RELATIVE_PLACE_ARROW_X -3.0/10
 #define RELATIVE_PLACE_ARROW_Y 12.0/10
 #define ARROW_POS_X 250

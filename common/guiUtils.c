@@ -584,8 +584,13 @@ bool guiUtils::coordinate2Scr(double lat0,double lon0,double alt0,double latP,do
     scrP.Y = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch - PI/180*pitch);
     scrP.X = SCREEN_HEIGHT/2 - EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Ryaw - PI/180*yaw);
     rotatePoint(scrP,scrP,origin,-roll);
+
+    printf("R0 = (%f,%f,%f)    RP = (%f,%f,%f)    delR = (%f,%f,%f)\nRpitch = %f     Ryaw = %f \nscrP = (%d,%d) \n",R0.X,R0.Y,alt0 , RP.X,RP.Y,altP , delR[0],delR[1],delR[2] , Rpitch , Ryaw , scrP.X,scrP.Y);
     //Special cases: delR=0 or point not on screen
     return true;
 }
+
+///
+
 
 
