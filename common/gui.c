@@ -185,7 +185,7 @@ bool loadMedia()
 		gCarCrossTexture.loadFromFile( PROJ_HOME "/resources/cross.png" ) &&
 		gCarArrowTexture.loadFromFile( PROJ_HOME "/resources/arrow1.png" ) &&
 		gCarMapMarkTexture.loadFromFile( PROJ_HOME "/resources/map_marker.png" ) &&
-		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/beaunit_bluetooth.png" ) &&
+		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/btLogo2.png" ) &&
 		gpsNOSIgnalTexture.loadFromFile( PROJ_HOME "/resources/gpsNOSIgnal.png" ) &&
 		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" );
 }
