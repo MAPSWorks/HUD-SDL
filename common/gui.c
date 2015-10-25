@@ -19,7 +19,11 @@ int velocity = 0;
 int gear = 0;
 int RPM = 0;
 
-
+///Priel's block
+int gearRec;
+double slipVal;
+double slipAngleVal;
+double absVel;
 
 ///Eden's Block
 
@@ -97,6 +101,11 @@ LTexture gGPSSignalTexture;
 LTexture gCarMapMarkTexture;
 LTexture gBlueToothTexture;
 LTexture gpsNOSIgnalTexture;
+
+LTexture gGearArrUpTexture;
+LTexture gGearArrDownTexture;
+LTexture gSlipIndTexture;
+LTexture gSlipAngTexture;
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -187,7 +196,9 @@ bool loadMedia()
 		gCarMapMarkTexture.loadFromFile( PROJ_HOME "/resources/map_marker.png" ) &&
 		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/btLogo2.png" ) &&
 		gpsNOSIgnalTexture.loadFromFile( PROJ_HOME "/resources/gpsNOSIgnal.png" ) &&
-		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" );
+		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" ) &&
+		gGearArrUpTexture.loadFromFile ( PROJ_HOME "/resources/arrowUP.png" ) &&
+		gGearArrDownTexture.loadFromFile ( PROJ_HOME "/resources/arrowDOWN.png" );
 }
 
 
@@ -220,6 +231,8 @@ void close()
 	gCarMapMarkTexture.free();
 	gBlueToothTexture.free();
 	gpsNOSIgnalTexture.free();
+	gGearArrUpTexture.free();
+	gGearArrDownTexture.free();
 
 	//Free global font
 	TTF_CloseFont( gFont );
@@ -407,6 +420,23 @@ void* gui_main(void* arg)
 				reloadText();
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X, RELATIVE_PLACE_FONT_VELOCITY_Y);
+
+/************Priel's block, representing slip, alip angle and gear shift recomendation******/
+				gearRec = gearRecomendation(bt_data.rpm, bt_data.gear);
+				if (gearRec != 0)
+				{
+					if (gearRec == 1)
+						gGearArrUpTexture.renderRelToScrn(GearRec_X,GearRec_Y);
+					else
+						gGearArrDownTexture.renderRelToScrn(GearRec_X,GearRec_Y);
+				}
+				absVel = sqrt(sensorData.velocity.c0*sensorData.velocity.c0 + sensorData.velocity.c1*sensorData.velocity.c1 + sensorData.velocity.c2*sensorData.velocity.c2);
+				slipVal = slipApproximation(bt_data.velo,absVel);
+				slipAngleVal =  slipAngle (bt_data.velo,absVel);
+				if (slipVal != 0)
+				{
+					//show slip angle
+				}
 
 /********************Eden's block************************/
                 //printf("test1\n");

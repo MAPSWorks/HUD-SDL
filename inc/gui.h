@@ -38,6 +38,10 @@
 #define RELATIVE_PLACE_RPM_X 5.1/10
 #define RELATIVE_PLACE_RPM_Y 8.7/10
 
+//gear recomendation
+#define GearRec_X 7.0/10
+#define GearRec_Y 6.0/10
+
 // fraction that will represent the relative place of the speedometer relative in the screen
 #define RELATIVE_PLACE_SPEEDOMETER_X 6.0/10 // we must use .0 so it will considered as double.
 #define RELATIVE_PLACE_SPEEDOMETER_Y 9.5/10
