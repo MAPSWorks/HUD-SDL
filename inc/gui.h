@@ -30,6 +30,7 @@
 #define RPM_STEP        400
 #define GEAR_STEP       1
 #define FONT_7_SIZE     150
+#define FONT_ARIAL_SIZE	50
 
 // velocity background
 #define RELATIVE_PLACE_VELOCITY_G_X 5.34/10
@@ -37,6 +38,7 @@
 
 #define RELATIVE_PLACE_RPM_X 5.1/10
 #define RELATIVE_PLACE_RPM_Y 8.7/10
+
 
 // fraction that will represent the relative place of the speedometer relative in the screen
 #define RELATIVE_PLACE_SPEEDOMETER_X 6.0/10 // we must use .0 so it will considered as double.
@@ -48,6 +50,7 @@
 
 #define VEL_FONT_COLOR 	{ 0xFF, 0xFF, 0xFF}
 #define GEAR_FONT_COLOR { 0xFF, 0xFF, 0xFF}
+#define SLIP_FONT_COLOR { 0xFF, 0xFF, 0xFF}
 
 //velocity 7 seg font place
 #define RELATIVE_PLACE_FONT_VELOCITY_X 5.7/10
@@ -57,6 +60,21 @@
 #define RELATIVE_PLACE_FONT_GEAR_X 9.0/10
 #define RELATIVE_PLACE_FONT_GEAR_Y 8.0/10
 
+//gear recomendation
+#define GEAR_REC_X 1.8/10
+#define GEAR_REC_Y 8.4/10
+
+//slip pic
+#define RELATIVE_SLIP_PIC_X 8.3/10
+#define RELATIVE_SLIP_PIC_Y 1.0/10
+
+//slip cross
+#define RELATIVE_SLIP_CROSS_X 8.0/10
+#define RELATIVE_SLIP_CROSS_Y 1.0/10
+
+//slip text
+#define RELATIVE_SLIP_TEXT_X 7.0/10
+#define RELATIVE_SLIP_TEXT_Y 7.0/10
 //GPS and MAP Stuff
 #define Earth_Radius 6372000.797560856 //Meters
 #define PI 3.14159265359

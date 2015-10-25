@@ -19,7 +19,11 @@ int velocity = 0;
 int gear = 0;
 int RPM = 0;
 
-
+///Priel's block
+int gearRec=0;
+double slipVal=0;
+double slipAngleVal=0;
+double absVel=0;
 
 ///Eden's Block
 
@@ -85,7 +89,7 @@ SDL_Renderer* gRenderer = NULL;
 SDL_Renderer** globgRenderer = &gRenderer;
 
 //Globally used font
-TTF_Font *gFont = NULL, *gDigitalFont = NULL;
+TTF_Font *gFont = NULL, *gDigitalFont = NULL, *gArialFont = NULL;
 
 //text for the velocity and gear.
 LTexture gTextVelocity, gTextGear;
@@ -102,6 +106,9 @@ LTexture gCarMapMarkTexture;
 LTexture gBlueToothTexture;
 LTexture gpsNOSIgnalTexture;
 LTexture gArtHorzNeedleTexture;
+
+LTexture gGearArrUpTexture, gGearArrDownTexture;
+LTexture gSlipImgTexture, gSlipAxesTexture, gSlipNeedleTexture, gTextSlip;
 
 //Artificial Horizon
 LTexture gArtHorzTexture;
@@ -171,7 +178,8 @@ bool loadMedia()
 {
 	//Open the font
 	gDigitalFont = TTF_OpenFont( PROJ_HOME "/resources/digital-7.ttf", FONT_7_SIZE);
-	if( !gDigitalFont ) {
+	gArialFont   = TTF_OpenFont( PROJ_HOME "/resources/arial.ttf", FONT_ARIAL_SIZE);
+	if( !gDigitalFont || !gArialFont ) {
 		printf( "Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError() );
 		return false;
 	}
@@ -193,7 +201,13 @@ bool loadMedia()
 		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/btLogo2.png" ) &&
 		gpsNOSIgnalTexture.loadFromFile( PROJ_HOME "/resources/gpsNOSIgnal.png" ) &&
 		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" ) &&
-        gArtHorzNeedleTexture.loadFromFile( PROJ_HOME "/resources/artHorzNeedle.png" );
+       		gArtHorzNeedleTexture.loadFromFile( PROJ_HOME "/resources/artHorzNeedle.png" ) &&
+		gGearArrUpTexture.loadFromFile ( PROJ_HOME "/resources/arrowUP.png" ) &&
+		gGearArrDownTexture.loadFromFile ( PROJ_HOME "/resources/arrowDOWN.png" ) &&
+		gTextSlip.loadFromRenderedText ( "Tadaa", SLIP_FONT_COLOR, gArialFont ) &&
+		gSlipImgTexture.loadFromFile ( PROJ_HOME "/resources/slip.png" ) &&
+		gSlipAxesTexture.loadFromFile ( PROJ_HOME "/resources/crossAngle.png" ) &&
+		gSlipNeedleTexture.loadFromFile ( PROJ_HOME "/resources/needle-fioptics2_trial.png" ) ;
 }
 
 
@@ -201,10 +215,12 @@ bool reloadText()
 {
 	std::string strVelocity = std::to_string(velocity);
 	std::string strGear = std::to_string(gear);
+	std::string strSlip = std::to_string(slipVal).substr(0,5);
 
 	//Render text
 	return 	gTextVelocity.loadFromRenderedText(strVelocity, VEL_FONT_COLOR,gDigitalFont) &&
-		gTextGear.loadFromRenderedText(strGear, GEAR_FONT_COLOR,gDigitalFont);
+		gTextGear.loadFromRenderedText(strGear, GEAR_FONT_COLOR,gDigitalFont) &&
+		gTextSlip.loadFromRenderedText(strSlip, SLIP_FONT_COLOR,gArialFont);
 }
 
 void close()
@@ -226,11 +242,17 @@ void close()
 	gCarMapMarkTexture.free();
 	gBlueToothTexture.free();
 	gpsNOSIgnalTexture.free();
-    gArtHorzNeedleTexture.free();
+	gArtHorzNeedleTexture.free();
+	gGearArrUpTexture.free();
+	gGearArrDownTexture.free();
+	gSlipImgTexture.free();
+	gSlipAxesTexture.free();
+	gSlipNeedleTexture.free();	
 
 	//Free global font
 	TTF_CloseFont( gFont );
 	TTF_CloseFont(gDigitalFont);
+	TTF_CloseFont(gArialFont);
 	gFont = NULL;
 
 	//Destroy window
@@ -419,6 +441,32 @@ void* gui_main(void* arg)
 				reloadText();
 				gTextGear.renderTXTRelToScrn(RELATIVE_PLACE_FONT_GEAR_X-0.8, RELATIVE_PLACE_FONT_GEAR_Y);
 				gTextVelocity.renderTXTRelToScrn(RELATIVE_PLACE_FONT_VELOCITY_X+0.33, RELATIVE_PLACE_FONT_VELOCITY_Y);
+
+/************Priel's block, representing slip, alip angle and gear shift recomendation******/
+				gearRec = gearRecomendation(bt_data.rpm, bt_data.gear);
+//				gearRec = 1;
+				if (gearRec != 0)
+				{
+					if (gearRec == 1)
+						gGearArrUpTexture.renderRelToScrn(GEAR_REC_X,GEAR_REC_Y);
+					else
+						gGearArrDownTexture.renderRelToScrn(GEAR_REC_X,GEAR_REC_Y);
+				}
+				absVel = sqrt(sensorData.velocity.c0*sensorData.velocity.c0 + sensorData.velocity.c1*sensorData.velocity.c1 + sensorData.velocity.c2*sensorData.velocity.c2);
+				slipVal = slipApproximation(bt_data.velo,absVel);
+				slipAngleVal =  slipAngle (bt_data.velo,absVel);
+//				slipVal = 20;
+				slipAngleVal = 0;
+				if (slipVal != 0)  //slip = 0 => slipAngle = 0
+				{
+					gSlipImgTexture.renderRelToScrn(RELATIVE_SLIP_PIC_X+0.01,RELATIVE_SLIP_PIC_Y-0.07);
+					gSlipAxesTexture.renderRelToScrn(RELATIVE_SLIP_PIC_X,RELATIVE_SLIP_PIC_Y);
+					gSlipNeedleTexture.renderRelToScrnRel2Object(RELATIVE_SLIP_PIC_X, RELATIVE_SLIP_PIC_Y, gSlipAxesTexture, 47.0+slipAngleVal);
+					gTextSlip.renderTXTRelToScrn(RELATIVE_SLIP_PIC_X, RELATIVE_SLIP_PIC_Y+0.12);
+					
+					//graph of the angle, needle with rotation, numbers as txt and png
+					//show slip angle
+				}
 
 /********************Eden's block************************/
                 //printf("test1\n");

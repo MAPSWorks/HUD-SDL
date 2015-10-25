@@ -61,7 +61,7 @@ and by the way Eden is gay :)
 ************************************************/
 int gearRecomendation(double rpm, int gear)
 {
-	if (rpm < OPS_DOWN)
+	if (rpm < OPS_DOWN && (gear > 1))
 		return -1;
 	if (gear == 1 && rpm > OSP1 )
 		return 1;
