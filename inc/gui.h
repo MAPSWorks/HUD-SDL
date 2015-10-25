@@ -13,6 +13,7 @@
 #include <vector>
 #include <iostream>
 #include "vn_linearAlgebra.h"
+#include "slipAndGear.h"
 
 //Screen dimension constants
 #define SCREEN_WIDTH 1280
