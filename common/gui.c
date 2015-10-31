@@ -247,7 +247,7 @@ void close()
 	gGearArrDownTexture.free();
 	gSlipImgTexture.free();
 	gSlipAxesTexture.free();
-	gSlipNeedleTexture.free();	
+	gSlipNeedleTexture.free();
 
 	//Free global font
 	TTF_CloseFont( gFont );
@@ -395,8 +395,8 @@ void* gui_main(void* arg)
                     sensorVel.c2 = 0;
                     //printf("2newLat,newLon = (%f,%f)\n",newLat,newLon);
                 }
-                if(counter == 200)
-                    counter = 0;
+                //if(counter == 200)
+                    //counter = 0;
 
 
 
@@ -463,7 +463,7 @@ void* gui_main(void* arg)
 					gSlipAxesTexture.renderRelToScrn(RELATIVE_SLIP_PIC_X,RELATIVE_SLIP_PIC_Y);
 					gSlipNeedleTexture.renderRelToScrnRel2Object(RELATIVE_SLIP_PIC_X, RELATIVE_SLIP_PIC_Y, gSlipAxesTexture, 47.0+slipAngleVal);
 					gTextSlip.renderTXTRelToScrn(RELATIVE_SLIP_PIC_X, RELATIVE_SLIP_PIC_Y+0.12);
-					
+
 					//graph of the angle, needle with rotation, numbers as txt and png
 					//show slip angle
 				}
@@ -604,36 +604,38 @@ void* gui_main(void* arg)
                 //if(vecLatitude.size()>0)
                   //  utils.renderTrail2scr(vecLatitude[vecLatitude.size()-1],vecLongitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1] ,vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,sensorData.ypr.yaw, sensorData.ypr.pitch, sensorData.ypr.roll,scrPts);
 
-
-                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0001 ,0.0 ,pitch ,yaw ,roll ,scrP);
+/*
+                if(utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0001 ,0.0 ,pitch ,yaw ,roll ,scrP))
                 //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
                 thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
                 //thickLineRGBA(gRenderer ,scrP.X - 20 ,scrP.Y ,scrP.X - 20,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
 
-                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0001,0.0,32.0,35.0002,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
-
+                if(utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0001,0.0,32.0,35.0002,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2))
+                {
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,200);
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
                 thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,200);
                 thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+                }
 
-
-                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0002 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                if(utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0002 ,0.0 ,pitch ,yaw ,roll ,scrP))
                 //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
                 thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
 
-                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0002,0.0,32.0,35.0004,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
-
+                if(utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0002,0.0,32.0,35.0004,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2))
+                {
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,200);
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
                 thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,200);
                 thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+                }
 
+                if(utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP))
 
-                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
 
-                utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0004,0.0,32.0001,35.0005,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2);
-
+                if(utils.sideLines2Scrn(pitch,yaw,roll,32.0,35.0,1.0,32.0,35.0004,0.0,32.0001,35.0005,0.0,scrPLeft1,scrPRight1,scrPLeft2,scrPRight2))
+                {
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,250);
                 thickLineRGBA(gRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
                 thickLineRGBA(gRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,250);
@@ -641,11 +643,15 @@ void* gui_main(void* arg)
 
                 thickLineRGBA(gRenderer ,scrPLeft2.X ,scrPLeft2.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,200,200,200);
                 thickLineRGBA(gRenderer ,scrPRight2.X ,scrPRight2.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,200,200,200);
+                }
 
-                utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP);
+                if(utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0 ,35.0004 ,0.0 ,pitch ,yaw ,roll ,scrP))
                 //utils.coordinate2Scr(32.0 ,35.0 ,1.0 ,32.0001 ,35.0005 ,0.0 ,pitch ,yaw ,roll ,scrP);
                 //thickLineRGBA(gRenderer ,scrP.X + 20 ,scrP.Y ,scrP.X + 20 ,scrP.Y, 2*LINE_THICKNESS ,50,200,255,255);
                 thickLineRGBA(gRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
+*/
+
+                utils.drawTrail(vecLatitude[vecLatitude.size()-1],vecLatitude[vecLongitude.size()-1],vecAltitude[vecAltitude.size()-1],vecLatitude_Prev,vecLongitude_Prev,vecAltitude_Prev,yaw,pitch,roll);
 /*************************************************************************/
 				SDL_RenderPresent( gRenderer );
 			}

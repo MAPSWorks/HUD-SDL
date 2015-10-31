@@ -93,15 +93,15 @@
 #define PHYSICAL_SCREEN_WIDTH 18 //mm
 #define PHYSICAL_SCREEN_HEIGHT 10.125 //mm
 #define PHYSICAL_PIXEL_SIZE 0.0140625//mm
-#define EYE_RELEIF 18 //mm
-#define ROAD_WIDTH 1
+#define EYE_RELEIF 34//18 //mm
+#define ROAD_WIDTH 4
 
 //
 #define MAX_SPEED 200
 #define AVG_SPEED 100
 
-#define HEIGHT_OF_HEAD 1.5 //Meters of the ground
-#define MAX_PTS_IN_LINE_OF_SIGHT 10;
+#define HEIGHT_OF_HEAD 5 //Meters of the ground
+#define MAX_TRAIL_LEN 10
 #define SIZE_TRAIL 3
 #define NORMALIZED_HEADING_DIFF 0.05
 #define FP_PRECITION 100
@@ -127,6 +127,7 @@ class Point{
 public:
 	short X;
 	short Y;
+	Point(void);
 	Point(int X, int Y);
 };
 
@@ -187,6 +188,9 @@ public:
     bool onScrn(double pitch,double yaw);
     bool relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,double roll,Point& scrP);
     bool sideLines2Scrn(double pitch,double yaw,double roll,double lat0,double lon0,double alt0,double latP1,double lonP1,double altP1,double latP2,double lonP2,double altP2,Point& scrPLeft1, Point& scrPRight1,Point& scrPLeft2, Point& scrPRight2);
+    void drawTrail(double lat0,double lon0,double alt0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev,std::vector<double>& vecAltitude_Prev,double yaw, double pitch, double roll);
+    unsigned int nearestPoint(double lat0,double lon0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev, bool& empty);
+    double distEuc(Coordinate co1 , Coordinate co2);
 
 };
 

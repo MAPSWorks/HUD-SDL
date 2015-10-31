@@ -4,7 +4,7 @@
 
 
 //Local defines
-#define SAMPLE_RADIUS 3
+#define SAMPLE_RADIUS 4
 #define LOOP_DETECTION_RADIUS 4
 #define NOISE_RADIUS 56
 #define FILTER_WIDTH 10
@@ -20,7 +20,9 @@
 #include "sensorenv.h"
 
 //General
+extern SDL_Renderer** globgRenderer;
 
+Point::Point(void) : X(0), Y(0) {};
 Point::Point(int X, int Y) : X(X), Y(Y) {};
 Coordinate::Coordinate(double X,double Y) : X(X), Y(Y) {};
 //SUB UTILITIES
@@ -169,6 +171,7 @@ bool guiUtils::inNeighbourhood(Coordinate& p1, Coordinate& p2, double radius)
 {
 	double r = radius;
 	double d = sqrt(((p1.X-p2.X)*(p1.X-p2.X)) + ((p1.Y-p2.Y)*(p1.Y-p2.Y)));
+    printf("d = %f\n",d);
 	if ( d < r ) return true;
 
 	return false;
@@ -178,7 +181,8 @@ bool guiUtils::isNoiseSample(Coordinate& p1, Coordinate& p2, double radius)
 {
 	double r = radius;
 	double d = sqrt(((p1.X-p2.X)*(p1.X-p2.X)) + ((p1.Y-p2.Y)*(p1.Y-p2.Y)));
-	if ( d > r ) return true;
+	printf("d = %f\n",d);
+    if ( d > r ) return true;
 
 	return false;
 }
@@ -573,7 +577,7 @@ bool guiUtils::coordinate2Scr(double lat0,double lon0,double alt0,double latP,do
     if(!coordinate2RelSpace(lat0,lon0,alt0,latP,lonP,altP,delR)){return false;}
     if(!relSpace2Scrn(delR,pitch,yaw,roll,scrP)){return false;}
     //printf("test coordinate2Scrn\n");
-    printf("scrP = (%d,%d)\n",scrP.X,scrP.Y);
+    //printf("scrP = (%d,%d)\n",scrP.X,scrP.Y);
 
     return true;
 }
@@ -595,35 +599,13 @@ bool guiUtils::coordinate2RelSpace(double lat0,double lon0,double alt0,double la
 
 bool guiUtils::onScrn(double pitch,double yaw)
 {
-    int pitchInt;
-    int yawInt;
-
-    pitchInt = (int)pitch;
-
-    double resPitch = pitch - (double)pitchInt;
-
-    pitchInt = pitchInt%180;
-
-    pitch = (double)pitchInt + resPitch;
-
-
-    yawInt = (int)yaw;
-
-    double resYaw = yaw - (double)yawInt;
-
-    yawInt = yawInt%360;
-
-    yaw = (double)yawInt + resYaw;
-
-
-    printf("th pitch = %f pitch = %f\n",180*atan(PHYSICAL_SCREEN_HEIGHT/2/EYE_RELEIF),pitch);
-    printf("th yaw = %f yaw = %f\n",180*atan(0.5),yaw);
-    if(abs(pitch) > 180/PI*atan(PHYSICAL_SCREEN_HEIGHT/2/EYE_RELEIF) || abs(yaw) > 180/PI*atan(0.5))
+    printf("yawTh = %f \n",180/PI*atan(0.5));
+    printf("yp = (%f,%f)",yaw,pitch);
+    if( (yaw < 180/PI*atan(0.5)) && (yaw > -180/PI*atan(0.5)))
     {
-        return false;
+        return true;
     }
-    printf("test onScrn == true\n");
-    return true;
+    return false;
 }
 
 bool guiUtils::relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,double roll,Point& scrP)
@@ -632,12 +614,16 @@ bool guiUtils::relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,d
     double Ryaw;
     Point origin(SCREEN_WIDTH/2,SCREEN_HEIGHT/2);
 
+
     getPitchYawFromVec(delR,Rpitch,Ryaw);
-    //if(!onScrn(180*Rpitch-pitch,180*Ryaw-yaw)){return false;}
+    printf("Rpitch + PI/180*pitch = %f Ryaw - PI/180*yaw = %f\n" , 180/PI*Rpitch + pitch,180/PI*Ryaw - yaw );
+    if(!onScrn(180/PI*Rpitch + pitch,180/PI*Ryaw - yaw)){return false;}
 
     scrP.Y = SCREEN_HEIGHT/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch + PI/180*pitch);
     scrP.X = SCREEN_WIDTH/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Ryaw - PI/180*yaw);
     rotatePoint(scrP,scrP,origin,90+roll);
+
+
     return true;
 }
 
@@ -686,9 +672,119 @@ bool guiUtils::sideLines2Scrn(double pitch,double yaw,double roll,double lat0,do
     if(!relSpace2Scrn(delR2_Left,pitch,yaw,roll,scrPLeft2)){return false;}
     if(!relSpace2Scrn(delR2_Right,pitch,yaw,roll,scrPRight2)){return false;}
 
-    printf("scrPLeft1 = (%d,%d) scrPRight1 = (%d,%d)\n",scrPLeft1.X,scrPLeft1.Y,scrPRight1.X,scrPRight1.Y);
-    printf("scrPLeft2 = (%d,%d) scrPRight2 = (%d,%d)\n",scrPLeft2.X,scrPLeft2.Y,scrPRight2.X,scrPRight2.Y);
+    //printf("scrPLeft1 = (%d,%d) scrPRight1 = (%d,%d)\n",scrPLeft1.X,scrPLeft1.Y,scrPRight1.X,scrPRight1.Y);
+    //printf("scrPLeft2 = (%d,%d) scrPRight2 = (%d,%d)\n",scrPLeft2.X,scrPLeft2.Y,scrPRight2.X,scrPRight2.Y);
 
     return true;
 }
 
+
+void guiUtils::drawTrail(double lat0,double lon0,double alt0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev,std::vector<double>& vecAltitude_Prev,double yaw, double pitch, double roll)
+{
+    double latP1;
+    double lonP1;
+    double altP1;
+
+    double latP2;
+    double lonP2;
+    double altP2;
+
+    bool empty = true;
+
+    Point scrP;
+    Point scrPLeft1;
+    Point scrPRight1;
+    Point scrPLeft2;
+    Point scrPRight2;
+
+    std::vector<Point> scrPts;
+    std::vector<Point> scrPtsLeft;
+    std::vector<Point> scrPtsRight;
+
+    unsigned int trailIdx =  nearestPoint(lat0,lon0,vecLatitude_Prev,vecLongitude_Prev, empty);
+
+    if(empty) return;
+
+    unsigned int indexBound = 0;
+    indexBound =  (MAX_TRAIL_LEN < vecLatitude_Prev.size()) ? MAX_TRAIL_LEN:vecLatitude_Prev.size();
+	for(unsigned int i = trailIdx ; (i < indexBound + trailIdx) && (indexBound > 1) ; ++i)
+	{
+        latP1 = vecLatitude_Prev[i];
+        lonP1 = vecLongitude_Prev[i];
+        altP1 = vecAltitude_Prev[i];
+
+        latP2 = vecLatitude_Prev[i+1];
+        lonP2 = vecLongitude_Prev[i+1];
+        altP2 = vecAltitude_Prev[i+1];
+
+
+		if(coordinate2Scr(lat0 ,lon0 ,alt0 + HEIGHT_OF_HEAD ,latP1 ,lonP1 ,altP1 ,pitch ,yaw ,roll ,scrP)){
+            //thickLineRGBA(*globgRenderer ,scrP.X ,scrP.Y ,scrP.X ,scrP.Y, 2*LINE_THICKNESS ,200,200,255,255);
+            scrPts.push_back(scrP);
+        }
+        //printf("scrP = (%d,%d)\n",scrP.X,scrP.Y);
+            //scrPts.push_back(scrP);
+
+		if(sideLines2Scrn(pitch ,yaw ,roll ,lat0 ,lon0 ,alt0 + HEIGHT_OF_HEAD ,latP1 ,lonP1 ,altP1 ,latP2 ,lonP2 ,altP2 ,scrPLeft1 ,scrPRight1 ,scrPLeft2 ,scrPRight2))
+		{
+            //thickLineRGBA(*globgRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,100,100,250);
+            //thickLineRGBA(*globgRenderer ,scrPLeft1.X ,scrPLeft1.Y ,scrPLeft1.X ,scrPLeft1.Y, LINE_THICKNESS ,100,200,200,200);
+            //thickLineRGBA(*globgRenderer,scrPRight1.X ,scrPRight1.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,100,100,250);
+            //thickLineRGBA(*globgRenderer ,scrPRight1.X ,scrPRight1.Y ,scrPRight1.X ,scrPRight1.Y, LINE_THICKNESS ,100,200,200,200);
+
+            //thickLineRGBA(*globgRenderer ,scrPLeft2.X ,scrPLeft2.Y ,scrPLeft2.X ,scrPLeft2.Y, LINE_THICKNESS ,100,200,200,200);
+            //thickLineRGBA(*globgRenderer ,scrPRight2.X ,scrPRight2.Y ,scrPRight2.X ,scrPRight2.Y, LINE_THICKNESS ,100,200,200,200);
+            scrPtsLeft.push_back(scrPLeft1);
+            scrPtsRight.push_back(scrPRight1);
+		}
+		//printf("scrPLeft = (%d,%d)\n",scrPLeft1.X,scrPLeft1.Y);
+		//printf("scrPRight = (%d,%d)\n",scrPRight1.X,scrPRight1.Y);
+    }
+
+    if(scrPts.empty()) return;
+
+    scrPtsLeft.push_back(scrPLeft2);
+    scrPtsRight.push_back(scrPRight2);
+
+    for(unsigned int i = 0 ; i < scrPts.size()-1 ; ++i)
+    {
+        thickLineRGBA(*globgRenderer ,scrPts[i].X ,scrPts[i].Y ,scrPts[i].X ,scrPts[i].Y, 2*LINE_THICKNESS ,200,200,255,255);
+    }
+
+    for(unsigned int i = 0 ; i < scrPtsLeft.size()-2 && i < scrPtsRight.size()-2 ; ++i)
+    {
+        thickLineRGBA(*globgRenderer ,scrPtsLeft[i].X ,scrPtsLeft[i].Y ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y, 2*LINE_THICKNESS ,100,100,100,250);
+        thickLineRGBA(*globgRenderer ,scrPtsRight[i].X ,scrPtsRight[i].Y ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y, 2*LINE_THICKNESS ,100,100,100,250);
+        thickLineRGBA(*globgRenderer ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y, LINE_THICKNESS ,100,200,200,200);
+        thickLineRGBA(*globgRenderer ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y, LINE_THICKNESS ,100,200,200,200);
+    }
+
+}
+
+unsigned int guiUtils::nearestPoint(double lat0,double lon0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev, bool& empty)
+{
+    empty = vecLatitude_Prev.empty();
+    if(empty) return 0;
+    Coordinate curr(0,0);
+    Coordinate nearCurr(0,0);
+    gps2linDist(curr,lat0,lon0);
+
+    gps2linDist(nearCurr,vecLatitude_Prev[0],vecLongitude_Prev[0]);
+    double d0 = distEuc(curr,nearCurr);
+    unsigned int indexMin = 0;
+
+
+    for(unsigned int i = 1 ; i < vecLatitude_Prev.size() ; ++i)
+    {
+        gps2linDist(nearCurr,vecLatitude_Prev[i],vecLongitude_Prev[i]);
+        d0 = (distEuc(curr,nearCurr) < d0) ? distEuc(curr,nearCurr):d0;
+        if(d0 > distEuc(curr,nearCurr))
+            indexMin = i;
+    }
+    return indexMin;
+}
+
+double guiUtils::distEuc(Coordinate co1 , Coordinate co2)
+{
+    return sqrt( (co1.X-co2.X)*(co1.X-co2.X) + (co1.Y-co2.Y)*(co1.Y-co2.Y) );
+}
