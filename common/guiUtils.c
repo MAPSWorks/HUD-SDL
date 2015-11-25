@@ -4,9 +4,10 @@
 
 
 //Local defines
-#define SAMPLE_RADIUS 4
+#define SAMPLE_RADIUS 1
+
 #define LOOP_DETECTION_RADIUS 4
-#define NOISE_RADIUS 56
+#define NOISE_RADIUS 100
 #define FILTER_WIDTH 10
 #define VEHICLE_ORIGIN_X 0
 #define VEHICLE_ORIGIN_Y 0
@@ -171,7 +172,7 @@ bool guiUtils::inNeighbourhood(Coordinate& p1, Coordinate& p2, double radius)
 {
 	double r = radius;
 	double d = sqrt(((p1.X-p2.X)*(p1.X-p2.X)) + ((p1.Y-p2.Y)*(p1.Y-p2.Y)));
-    printf("d = %f\n",d);
+    //printf("d = %f\n",d);
 	if ( d < r ) return true;
 
 	return false;
@@ -181,7 +182,7 @@ bool guiUtils::isNoiseSample(Coordinate& p1, Coordinate& p2, double radius)
 {
 	double r = radius;
 	double d = sqrt(((p1.X-p2.X)*(p1.X-p2.X)) + ((p1.Y-p2.Y)*(p1.Y-p2.Y)));
-	printf("d = %f\n",d);
+	//printf("d = %f\n",d);
     if ( d > r ) return true;
 
 	return false;
@@ -599,8 +600,8 @@ bool guiUtils::coordinate2RelSpace(double lat0,double lon0,double alt0,double la
 
 bool guiUtils::onScrn(double pitch,double yaw)
 {
-    printf("yawTh = %f \n",180/PI*atan(0.5));
-    printf("yp = (%f,%f)",yaw,pitch);
+    //printf("yawTh = %f \n",180/PI*atan(0.5));
+    //printf("yp = (%f,%f)",yaw,pitch);
     if( (yaw < 180/PI*atan(0.5)) && (yaw > -180/PI*atan(0.5)))
     {
         return true;
@@ -616,7 +617,7 @@ bool guiUtils::relSpace2Scrn(std::vector<double>& delR,double pitch,double yaw,d
 
 
     getPitchYawFromVec(delR,Rpitch,Ryaw);
-    printf("Rpitch + PI/180*pitch = %f Ryaw - PI/180*yaw = %f\n" , 180/PI*Rpitch + pitch,180/PI*Ryaw - yaw );
+    //printf("Rpitch + PI/180*pitch = %f Ryaw - PI/180*yaw = %f\n" , 180/PI*Rpitch + pitch,180/PI*Ryaw - yaw );
     if(!onScrn(180/PI*Rpitch + pitch,180/PI*Ryaw - yaw)){return false;}
 
     scrP.Y = SCREEN_HEIGHT/2 + EYE_RELEIF/PHYSICAL_PIXEL_SIZE*tan(Rpitch + PI/180*pitch);
@@ -702,7 +703,6 @@ void guiUtils::drawTrail(double lat0,double lon0,double alt0,std::vector<double>
     std::vector<Point> scrPtsRight;
 
     unsigned int trailIdx =  nearestPoint(lat0,lon0,vecLatitude_Prev,vecLongitude_Prev, empty);
-
     if(empty) return;
 
     unsigned int indexBound = 0;
@@ -749,14 +749,18 @@ void guiUtils::drawTrail(double lat0,double lon0,double alt0,std::vector<double>
     for(unsigned int i = 0 ; i < scrPts.size()-1 ; ++i)
     {
         thickLineRGBA(*globgRenderer ,scrPts[i].X ,scrPts[i].Y ,scrPts[i].X ,scrPts[i].Y, 2*LINE_THICKNESS ,200,200,255,255);
+        //printf("scrnPts[%d] = (%d,%d)\n",i,scrPts[i].X,scrPts[i].Y);
     }
 
     for(unsigned int i = 0 ; i < scrPtsLeft.size()-2 && i < scrPtsRight.size()-2 ; ++i)
     {
-        thickLineRGBA(*globgRenderer ,scrPtsLeft[i].X ,scrPtsLeft[i].Y ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y, 2*LINE_THICKNESS ,100,100,100,250);
-        thickLineRGBA(*globgRenderer ,scrPtsRight[i].X ,scrPtsRight[i].Y ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y, 2*LINE_THICKNESS ,100,100,100,250);
+        thickLineRGBA(*globgRenderer ,scrPtsLeft[i].X ,scrPtsLeft[i].Y ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y, LINE_THICKNESS ,100,100,100,250);
+        thickLineRGBA(*globgRenderer ,scrPtsRight[i].X ,scrPtsRight[i].Y ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y, LINE_THICKNESS ,100,100,100,250);
         thickLineRGBA(*globgRenderer ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y ,scrPtsLeft[i+1].X ,scrPtsLeft[i+1].Y, LINE_THICKNESS ,100,200,200,200);
         thickLineRGBA(*globgRenderer ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y ,scrPtsRight[i+1].X ,scrPtsRight[i+1].Y, LINE_THICKNESS ,100,200,200,200);
+
+        //printf("scrnPtsLeft[%d] = (%d,%d)\n",i,scrPtsLeft[i].X,scrPtsLeft[i].Y);
+        //printf("scrnPtsRight[%d] = (%d,%d)\n",i,scrPtsRight[i].X,scrPtsRight[i].Y);
     }
 
 }
@@ -777,9 +781,14 @@ unsigned int guiUtils::nearestPoint(double lat0,double lon0,std::vector<double>&
     for(unsigned int i = 1 ; i < vecLatitude_Prev.size() ; ++i)
     {
         gps2linDist(nearCurr,vecLatitude_Prev[i],vecLongitude_Prev[i]);
-        d0 = (distEuc(curr,nearCurr) < d0) ? distEuc(curr,nearCurr):d0;
-        if(d0 > distEuc(curr,nearCurr))
+        double currDistance = distEuc(curr,nearCurr);
+        if(currDistance < d0) {
+            d0 = currDistance;
             indexMin = i;
+        }
+    //printf("curr = (%f,%f)\n",curr.X,curr.Y);
+    //printf("nearCurr = (%f,%f)\n",nearCurr.X,nearCurr.Y);
+    //printf("nearDist = %f\n",d0);
     }
     return indexMin;
 }
@@ -788,3 +797,29 @@ double guiUtils::distEuc(Coordinate co1 , Coordinate co2)
 {
     return sqrt( (co1.X-co2.X)*(co1.X-co2.X) + (co1.Y-co2.Y)*(co1.Y-co2.Y) );
 }
+
+
+void guiUtils::simulationMap(int& counter,double& lat , double& lon , double& alt)
+{
+
+    if(counter<=500){
+        lat = 35+0.005*cos(PI/250.0*counter);
+        lon = 32+0.005*sin(PI/250.0*counter);
+        counter++;
+    }
+    else if(counter<=1000){
+        lat = 35 + 0.005*cos(PI-PI/250.0*counter)+0.01;
+        lon = 32 + 0.005*sin(PI-PI/250.0*counter);
+        counter++;
+    }
+    else
+    counter = 0 ;
+}
+
+
+
+
+
+
+
+

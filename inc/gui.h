@@ -94,15 +94,15 @@
 #define PHYSICAL_SCREEN_HEIGHT 10.125 //mm
 #define PHYSICAL_PIXEL_SIZE 0.0140625//mm
 #define EYE_RELEIF 34//18 //mm
-#define ROAD_WIDTH 4
+#define ROAD_WIDTH 0.2
 
 //
 #define MAX_SPEED 200
 #define AVG_SPEED 100
 
-#define HEIGHT_OF_HEAD 5 //Meters of the ground
-#define MAX_TRAIL_LEN 10
-#define SIZE_TRAIL 3
+#define HEIGHT_OF_HEAD 2 //Meters of the ground
+#define MAX_TRAIL_LEN 20
+#define SIZE_TRAIL 5
 #define NORMALIZED_HEADING_DIFF 0.05
 #define FP_PRECITION 100
 // A number between 0 & 1 which representd the difference between heading of normalized velocities.
@@ -191,7 +191,7 @@ public:
     void drawTrail(double lat0,double lon0,double alt0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev,std::vector<double>& vecAltitude_Prev,double yaw, double pitch, double roll);
     unsigned int nearestPoint(double lat0,double lon0,std::vector<double>& vecLatitude_Prev,std::vector<double>& vecLongitude_Prev, bool& empty);
     double distEuc(Coordinate co1 , Coordinate co2);
-
+    void simulationMap(int& counter,double& lat , double& lon , double& alt);
 };
 
 void* gui_main(void* arg);
