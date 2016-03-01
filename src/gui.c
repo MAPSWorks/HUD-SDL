@@ -204,37 +204,37 @@ bool init()
 bool loadMedia()
 {
 	//Open the font
-	gDigitalFont = TTF_OpenFont( PROJ_HOME "/resources/digital-7.ttf", FONT_7_SIZE);
-	gArialFont   = TTF_OpenFont( PROJ_HOME "/resources/arial.ttf", FONT_ARIAL_SIZE);
+	gDigitalFont = TTF_OpenFont( ASSETS_DIR "digital-7.ttf", FONT_7_SIZE);
+	gArialFont   = TTF_OpenFont( ASSETS_DIR "arial.ttf", FONT_ARIAL_SIZE);
 	if( !gDigitalFont || !gArialFont ) {
 		printf( "Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError() );
 		return false;
 	}
 	//Load media
-	return 	gGearGradient[0].loadFromFile( PROJ_HOME "/resources/gearFinal1.png" ) 		&&
-		gGearGradient[1].loadFromFile( PROJ_HOME "/resources/gearFinal2.png" ) 		&&
-		gGearGradient[2].loadFromFile( PROJ_HOME "/resources/gearFinal3.png" ) 		&&
-		gGearGradient[3].loadFromFile( PROJ_HOME "/resources/gearFinal4.png" ) 		&&
-		gGearGradient[4].loadFromFile( PROJ_HOME "/resources/gearFinal5.png" ) 		&&
-		gGearGradient[5].loadFromFile( PROJ_HOME "/resources/gearFinal6.png" ) 		&&
-		gVelocityGradient.loadFromFile( PROJ_HOME "/resources/velocityGradientWithNum.png" ) &&
-		gNeedleTexture.loadFromFile( PROJ_HOME "/resources/needle-fioptics2.png" ) 	&&
-		gArtHorzTexture.loadFromFile( PROJ_HOME "/resources/artHorz.png" ) 		&&
+	return 	gGearGradient[0].loadFromFile( ASSETS_DIR "gearFinal1.png" ) 		&&
+		gGearGradient[1].loadFromFile( ASSETS_DIR "gearFinal2.png" ) 		&&
+		gGearGradient[2].loadFromFile( ASSETS_DIR "gearFinal3.png" ) 		&&
+		gGearGradient[3].loadFromFile( ASSETS_DIR "gearFinal4.png" ) 		&&
+		gGearGradient[4].loadFromFile( ASSETS_DIR "gearFinal5.png" ) 		&&
+		gGearGradient[5].loadFromFile( ASSETS_DIR "gearFinal6.png" ) 		&&
+		gVelocityGradient.loadFromFile( ASSETS_DIR "velocityGradientWithNum.png" ) &&
+		gNeedleTexture.loadFromFile( ASSETS_DIR "needle-fioptics2.png" ) 	&&
+		gArtHorzTexture.loadFromFile( ASSETS_DIR "artHorz.png" ) 		&&
 		gTextVelocity.loadFromRenderedText( "Tadaa", VEL_FONT_COLOR,gDigitalFont )	&&
 		gTextGear.loadFromRenderedText( "Tadaa", GEAR_FONT_COLOR, gDigitalFont ) &&
-		gCarCrossTexture.loadFromFile( PROJ_HOME "/resources/cross_trial1.png" ) &&
-		gCarArrowTexture.loadFromFile( PROJ_HOME "/resources/arrow1.png" ) &&
-		gCarMapMarkTexture.loadFromFile( PROJ_HOME "/resources/map_marker.png" ) &&
-		gBlueToothTexture.loadFromFile( PROJ_HOME "/resources/btLogo2.png" ) &&
-		gpsNOSIgnalTexture.loadFromFile( PROJ_HOME "/resources/gpsNOSIgnal.png" ) &&
-		gGPSSignalTexture.loadFromFile( PROJ_HOME "/resources/gpstracksicon.png" ) &&
-       		//gArtHorzNeedleTexture.loadFromFile( PROJ_HOME "/resources/artHorzNeedle.png" ) &&
-		gGearArrUpTexture.loadFromFile ( PROJ_HOME "/resources/arrowUP.png" ) &&
-		gGearArrDownTexture.loadFromFile ( PROJ_HOME "/resources/arrowDOWN.png" ) &&
+		gCarCrossTexture.loadFromFile( ASSETS_DIR "cross_trial1.png" ) &&
+		gCarArrowTexture.loadFromFile( ASSETS_DIR "arrow1.png" ) &&
+		gCarMapMarkTexture.loadFromFile( ASSETS_DIR "map_marker.png" ) &&
+		gBlueToothTexture.loadFromFile( ASSETS_DIR "btLogo2.png" ) &&
+		gpsNOSIgnalTexture.loadFromFile( ASSETS_DIR "gpsNOSIgnal.png" ) &&
+		gGPSSignalTexture.loadFromFile( ASSETS_DIR "gpstracksicon.png" ) &&
+       		//gArtHorzNeedleTexture.loadFromFile( ASSETS_DIR "artHorzNeedle.png" ) &&
+		gGearArrUpTexture.loadFromFile ( ASSETS_DIR "arrowUP.png" ) &&
+		gGearArrDownTexture.loadFromFile ( ASSETS_DIR "arrowDOWN.png" ) &&
 		//gTextSlip.loadFromRenderedText ( "Tadaa", SLIP_FONT_COLOR, gArialFont ) &&
-		gSlipImgTexture.loadFromFile ( PROJ_HOME "/resources/slip.png" ) &&
-		gSlipAxesTexture.loadFromFile ( PROJ_HOME "/resources/slipInd.png" ) &&
-		gSlipNeedleTexture.loadFromFile ( PROJ_HOME "/resources/slipNeedle.png" ) ;
+		gSlipImgTexture.loadFromFile ( ASSETS_DIR "slip.png" ) &&
+		gSlipAxesTexture.loadFromFile ( ASSETS_DIR "slipInd.png" ) &&
+		gSlipNeedleTexture.loadFromFile ( ASSETS_DIR "slipNeedle.png" ) ;
 }
 
 

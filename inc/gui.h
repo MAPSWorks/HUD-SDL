@@ -15,6 +15,8 @@
 #include "vn_linearAlgebra.h"
 #include "slipAndGear.h"
 
+#define ASSETS_DIR PROJ_HOME "assets/"
+
 //Screen dimension constants
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720

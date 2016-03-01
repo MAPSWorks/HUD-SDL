@@ -4,24 +4,24 @@ CFLAGS		= -Wall -g -std=c++11
 
 # common
 LIBS		= -lm -lbluetooth -lrt -lpthread -lSDL2 -lSDL2_image -lSDL2_ttf -lSDL2_gfx 
-INCS		= -I$(PROJBASE)/inc -I/usr/local/include/SDL2 -I/usr/include/SDL2
+INCS		= -I$(PROJROOT)/inc -I/usr/local/include/SDL2 -I/usr/include/SDL2
 
 # project
-PROJBASE	= .
+PROJROOT	= .
 
 # dirs
-COMMON		= $(PROJBASE)/common
-SRCS		= $(wildcard $(COMMON)/*.c)
-MISC		= $(PROJBASE)/misc
-INCDIR		= $(PROJBASE)/inc
+INCDIR		= $(PROJROOT)/inc
+SRC		= $(PROJROOT)/src
+MISC		= $(PROJROOT)/misc
+SRCS		= $(wildcard $(SRC)/*.c)
 
 # objects
 OBJS		= $(SRCS:.c=.o)
-MAIN		= $(PROJBASE)/main.o
+MAIN		= $(PROJROOT)/main.o
 BT_CL		= $(MISC)/bt_client.o
 
 # outputs
-BINDIR		= $(PROJBASE)/bin
+BINDIR		= $(PROJROOT)/bin
 BIN		= $(BINDIR)/project.out
 BT_CL_BIN	= $(BINDIR)/bt_cl.out
 
