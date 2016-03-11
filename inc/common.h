@@ -3,7 +3,7 @@
 
 
 #ifdef 	ALEX_COMP
-#define PROJ_HOME "/home/alex/Workspace/hud_proj/"
+#define PROJ_HOME "/home/alex/Sandbox/HUD_proj/"
 #endif
 #ifndef PROJ_HOME
 #define PROJ_HOME "/home/odroid/HUD_proj/"
